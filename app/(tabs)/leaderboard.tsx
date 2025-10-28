@@ -224,7 +224,7 @@ export default function LeaderboardScreen() {
                   ]}
                   onPress={() => handleAudienceChange('all')}
                 >
-                  <Users size={18} color={audienceFilter === 'all' ? '#fff' : '#ffffff80'} />
+                  <Users size={16} color={audienceFilter === 'all' ? '#fff' : '#ffffff60'} />
                   <Text
                     style={[
                       styles.audienceButtonText,
@@ -242,7 +242,7 @@ export default function LeaderboardScreen() {
                   ]}
                   onPress={() => handleAudienceChange('communities')}
                 >
-                  <Trophy size={18} color={audienceFilter === 'communities' ? '#fff' : '#ffffff80'} />
+                  <Trophy size={16} color={audienceFilter === 'communities' ? '#fff' : '#ffffff60'} />
                   <Text
                     style={[
                       styles.audienceButtonText,
@@ -260,7 +260,7 @@ export default function LeaderboardScreen() {
                   ]}
                   onPress={() => handleAudienceChange('friends')}
                 >
-                  <UserCheck size={18} color={audienceFilter === 'friends' ? '#fff' : '#ffffff80'} />
+                  <UserCheck size={16} color={audienceFilter === 'friends' ? '#fff' : '#ffffff60'} />
                   <Text
                     style={[
                       styles.audienceButtonText,
@@ -405,7 +405,6 @@ export default function LeaderboardScreen() {
               <>
                 {mockLeaderboard.length >= 3 && (
                   <View style={styles.podiumContainer}>
-                    <Text style={styles.topThreeTitle}>Top 3</Text>
                     <View style={styles.podiumRow}>
                       <View style={[styles.podiumPlace, styles.podiumSecond]}>
                         <TouchableOpacity
@@ -424,11 +423,11 @@ export default function LeaderboardScreen() {
                           activeOpacity={mockLeaderboard[1].userId === user.id ? 1 : 0.7}
                         >
                           <View style={styles.podiumPillar}>
-                            <View style={styles.rankBadge}>
-                              <Text style={[styles.rankBadgeText, { color: '#C0C0C0' }]}>2</Text>
+                            <View style={[styles.rankBadgeTop, { backgroundColor: '#C0C0C0' }]}>
+                              <Text style={styles.rankBadgeTopText}>2</Text>
                             </View>
                             <View style={[styles.podiumAvatarContainer, { borderColor: '#C0C0C0' }]}>
-                              <Avatar avatar={mockLeaderboard[1].avatar} size={54} />
+                              <Avatar avatar={mockLeaderboard[1].avatar} size={60} />
                             </View>
                             <Text style={styles.podiumUsername} numberOfLines={1}>
                               {mockLeaderboard[1].username}
@@ -442,11 +441,15 @@ export default function LeaderboardScreen() {
                                 {(selectedCategory === 'all' 
                                   ? mockLeaderboard[1].totalXP 
                                   : (mockLeaderboard[1].categoryXP?.[selectedCategory] || 0)
-                                ).toLocaleString()} XP
+                                ).toLocaleString()}
                               </Text>
                             )}
+                            <Text style={styles.podiumXPLabel}>XP</Text>
                           </View>
-                          <View style={[styles.podiumBase, { height: 100, backgroundColor: '#C0C0C040' }]} />
+                          <LinearGradient
+                            colors={['#C0C0C050', '#C0C0C020']}
+                            style={[styles.podiumBase, { height: 110 }]}
+                          />
                         </TouchableOpacity>
                       </View>
 
@@ -470,13 +473,13 @@ export default function LeaderboardScreen() {
                             <View style={styles.crownContainer}>
                               <Text style={styles.crown}>👑</Text>
                             </View>
-                            <View style={[styles.rankBadge, styles.rankBadgeFirst]}>
-                              <Text style={[styles.rankBadgeText, { color: '#FFD700' }]}>1</Text>
+                            <View style={[styles.rankBadgeTop, { backgroundColor: '#FFD700' }]}>
+                              <Text style={[styles.rankBadgeTopText, { color: '#1a1a2e' }]}>1</Text>
                             </View>
-                            <View style={[styles.podiumAvatarContainer, { borderColor: '#FFD700' }]}>
-                              <Avatar avatar={mockLeaderboard[0].avatar} size={64} />
+                            <View style={[styles.podiumAvatarContainer, { borderColor: '#FFD700', borderWidth: 5 }]}>
+                              <Avatar avatar={mockLeaderboard[0].avatar} size={70} />
                             </View>
-                            <Text style={[styles.podiumUsername, { fontSize: 15, fontWeight: '800' }]} numberOfLines={1}>
+                            <Text style={[styles.podiumUsername, { fontSize: 16, fontWeight: '900' }]} numberOfLines={1}>
                               {mockLeaderboard[0].username}
                             </Text>
                             {mockLeaderboard[0].isMasked ? (
@@ -484,15 +487,19 @@ export default function LeaderboardScreen() {
                                 <Lock size={14} color="#ffffff60" />
                               </View>
                             ) : (
-                              <Text style={[styles.podiumXP, { fontSize: 14, fontWeight: '700' }]}>
+                              <Text style={[styles.podiumXP, { fontSize: 18, fontWeight: '900' }]}>
                                 {(selectedCategory === 'all' 
                                   ? mockLeaderboard[0].totalXP 
                                   : (mockLeaderboard[0].categoryXP?.[selectedCategory] || 0)
-                                ).toLocaleString()} XP
+                                ).toLocaleString()}
                               </Text>
                             )}
+                            <Text style={[styles.podiumXPLabel, { fontSize: 11, fontWeight: '700' }]}>XP</Text>
                           </View>
-                          <View style={[styles.podiumBase, { height: 130, backgroundColor: '#FFD70040' }]} />
+                          <LinearGradient
+                            colors={['#FFD70060', '#FFD70030']}
+                            style={[styles.podiumBase, { height: 150 }]}
+                          />
                         </TouchableOpacity>
                       </View>
 
@@ -513,11 +520,11 @@ export default function LeaderboardScreen() {
                           activeOpacity={mockLeaderboard[2].userId === user.id ? 1 : 0.7}
                         >
                           <View style={styles.podiumPillar}>
-                            <View style={styles.rankBadge}>
-                              <Text style={[styles.rankBadgeText, { color: '#CD7F32' }]}>3</Text>
+                            <View style={[styles.rankBadgeTop, { backgroundColor: '#CD7F32' }]}>
+                              <Text style={styles.rankBadgeTopText}>3</Text>
                             </View>
                             <View style={[styles.podiumAvatarContainer, { borderColor: '#CD7F32' }]}>
-                              <Avatar avatar={mockLeaderboard[2].avatar} size={54} />
+                              <Avatar avatar={mockLeaderboard[2].avatar} size={60} />
                             </View>
                             <Text style={styles.podiumUsername} numberOfLines={1}>
                               {mockLeaderboard[2].username}
@@ -531,11 +538,15 @@ export default function LeaderboardScreen() {
                                 {(selectedCategory === 'all' 
                                   ? mockLeaderboard[2].totalXP 
                                   : (mockLeaderboard[2].categoryXP?.[selectedCategory] || 0)
-                                ).toLocaleString()} XP
+                                ).toLocaleString()}
                               </Text>
                             )}
+                            <Text style={styles.podiumXPLabel}>XP</Text>
                           </View>
-                          <View style={[styles.podiumBase, { height: 80, backgroundColor: '#CD7F3240' }]} />
+                          <LinearGradient
+                            colors={['#CD7F3250', '#CD7F3220']}
+                            style={[styles.podiumBase, { height: 90 }]}
+                          />
                         </TouchableOpacity>
                       </View>
                     </View>
@@ -651,30 +662,30 @@ const styles = StyleSheet.create({
     fontWeight: '500' as const,
   },
   filtersContainer: {
-    backgroundColor: '#ffffff08',
-    borderRadius: 16,
-    padding: 16,
+    backgroundColor: '#ffffff05',
+    borderRadius: 20,
+    padding: 18,
     marginBottom: 20,
     borderWidth: 1,
-    borderColor: '#ffffff15',
+    borderColor: '#ffffff12',
   },
   filterRow: {
-    marginBottom: 16,
+    marginBottom: 14,
   },
   filterLabel: {
-    fontSize: 12,
-    fontWeight: '700' as const,
-    color: '#ffffff70',
-    marginBottom: 10,
+    fontSize: 11,
+    fontWeight: '800' as const,
+    color: '#ffffff50',
+    marginBottom: 12,
     textTransform: 'uppercase' as const,
-    letterSpacing: 1.5,
+    letterSpacing: 2,
   },
   categorySection: {
     marginBottom: 24,
   },
   audienceFilters: {
     flexDirection: 'row',
-    gap: 10,
+    gap: 8,
   },
   audienceButton: {
     flex: 1,
@@ -682,47 +693,47 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 6,
-    paddingVertical: 14,
-    paddingHorizontal: 10,
-    borderRadius: 14,
-    backgroundColor: '#1a1a2e',
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+    borderRadius: 12,
+    backgroundColor: '#16213e',
     borderWidth: 2,
-    borderColor: '#ffffff15',
+    borderColor: 'transparent',
   },
   audienceButtonActive: {
-    backgroundColor: '#667eea30',
+    backgroundColor: '#667eea',
     borderColor: '#667eea',
   },
   audienceButtonText: {
-    fontSize: 13,
-    fontWeight: '700' as const,
-    color: '#ffffff80',
+    fontSize: 12,
+    fontWeight: '800' as const,
+    color: '#ffffff60',
   },
   audienceButtonTextActive: {
     color: '#fff',
   },
   timeFilters: {
     flexDirection: 'row',
-    gap: 10,
+    gap: 8,
   },
   timeButton: {
     flex: 1,
     paddingVertical: 12,
-    paddingHorizontal: 12,
-    borderRadius: 14,
-    backgroundColor: '#1a1a2e',
+    paddingHorizontal: 10,
+    borderRadius: 12,
+    backgroundColor: '#16213e',
     borderWidth: 2,
-    borderColor: '#ffffff15',
+    borderColor: 'transparent',
     alignItems: 'center',
   },
   timeButtonActive: {
-    backgroundColor: '#4ECDC430',
+    backgroundColor: '#4ECDC4',
     borderColor: '#4ECDC4',
   },
   timeButtonText: {
-    fontSize: 13,
-    fontWeight: '700' as const,
-    color: '#ffffff80',
+    fontSize: 12,
+    fontWeight: '800' as const,
+    color: '#ffffff60',
   },
   timeButtonTextActive: {
     color: '#fff',
@@ -836,101 +847,108 @@ const styles = StyleSheet.create({
   },
   podiumContainer: {
     marginBottom: 32,
-    paddingTop: 20,
-    backgroundColor: '#ffffff08',
-    borderRadius: 20,
-    padding: 20,
+    paddingTop: 30,
+    paddingBottom: 20,
+    paddingHorizontal: 16,
+    backgroundColor: '#ffffff05',
+    borderRadius: 24,
     borderWidth: 1,
-    borderColor: '#ffffff15',
-  },
-  topThreeTitle: {
-    fontSize: 18,
-    fontWeight: '800' as const,
-    color: '#fff',
-    textAlign: 'center',
-    marginBottom: 20,
-    textTransform: 'uppercase' as const,
-    letterSpacing: 2,
+    borderColor: '#ffffff12',
   },
   podiumRow: {
     flexDirection: 'row',
     alignItems: 'flex-end',
     justifyContent: 'center',
-    gap: 16,
+    gap: 12,
   },
   podiumPlace: {
     flex: 1,
     alignItems: 'center',
   },
   podiumFirst: {
-    marginBottom: 35,
+    marginBottom: 0,
   },
   podiumSecond: {
-    marginBottom: 5,
+    marginBottom: -20,
   },
   podiumThird: {
-    marginBottom: -15,
+    marginBottom: -30,
   },
   crownContainer: {
     position: 'absolute',
-    top: -35,
+    top: -45,
   },
   crown: {
-    fontSize: 32,
+    fontSize: 36,
   },
-  rankBadge: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#1a1a2e',
-    borderWidth: 2,
-    borderColor: '#fff',
+  rankBadgeTop: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 8,
+    marginBottom: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
   },
-  rankBadgeFirst: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-  },
-  rankBadgeText: {
-    fontSize: 16,
+  rankBadgeTopText: {
+    fontSize: 14,
     fontWeight: '900' as const,
+    color: '#fff',
   },
   podiumPillar: {
     alignItems: 'center',
-    gap: 8,
-    marginBottom: 12,
+    gap: 6,
+    marginBottom: 0,
+    paddingHorizontal: 8,
   },
   podiumAvatarContainer: {
     borderWidth: 4,
     borderRadius: 50,
-    padding: 2,
+    padding: 3,
+    backgroundColor: '#1a1a2e',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.4,
+    shadowRadius: 10,
+    elevation: 10,
   },
   podiumUsername: {
-    fontSize: 13,
-    fontWeight: '700' as const,
+    fontSize: 14,
+    fontWeight: '800' as const,
     color: '#fff',
-    maxWidth: 100,
+    maxWidth: 90,
     textAlign: 'center',
+    marginTop: 4,
   },
   podiumXPContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    marginTop: 4,
   },
   podiumXP: {
-    fontSize: 12,
-    fontWeight: '700' as const,
+    fontSize: 15,
+    fontWeight: '900' as const,
     color: '#FFD700',
     textAlign: 'center',
+  },
+  podiumXPLabel: {
+    fontSize: 10,
+    fontWeight: '700' as const,
+    color: '#ffffff80',
+    textAlign: 'center',
+    marginTop: -2,
   },
   podiumBase: {
     width: '100%',
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
     borderWidth: 1,
-    borderColor: '#ffffff20',
+    borderColor: '#ffffff15',
+    marginTop: 12,
   },
 });
