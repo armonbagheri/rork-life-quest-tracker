@@ -53,6 +53,14 @@ export interface DayHistory {
   categoryXP?: Partial<Record<CategoryType, number>>;
 }
 
+export interface Community {
+  id: string;
+  name: string;
+  description: string;
+  memberCount?: number;
+  icon?: string;
+}
+
 export interface User {
   id: string;
   username: string;
@@ -100,6 +108,9 @@ export interface LeaderboardEntry {
   level: number;
   rank: number;
   categoryXP?: Record<CategoryType, number>;
+  isFriend?: boolean;
+  inCommunity?: boolean;
+  isMasked?: boolean;
 }
 
 export interface DailyStreak {

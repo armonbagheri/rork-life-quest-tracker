@@ -79,11 +79,13 @@ export const [UserProvider, useUser] = createContextHook(() => {
   const completeOnboarding = useCallback(async (
     username: string,
     selectedCategories: CategoryType[],
-    categoryPrivacy: Record<CategoryType, PrivacyLevel>
+    categoryPrivacy: Record<CategoryType, PrivacyLevel>,
+    communities: string[] = []
   ) => {
     const updatedUser: User = {
       ...user,
       username,
+      communities,
       categories: Object.keys(user.categories).reduce((acc, key) => {
         const categoryKey = key as CategoryType;
         acc[categoryKey] = {

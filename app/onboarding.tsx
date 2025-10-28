@@ -12,8 +12,9 @@ import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { CategoryType, PrivacyLevel } from '@/types';
+import { CategoryType, PrivacyLevel, Community } from '@/types';
 import { CATEGORY_DATA } from '@/constants/categories';
+import { AVAILABLE_COMMUNITIES } from '@/constants/communities';
 import { useUser } from '@/context/UserContext';
 
 
@@ -39,6 +40,7 @@ export default function OnboardingScreen() {
     mental: 'public',
     recovery: 'private',
   });
+  const [selectedCommunities, setSelectedCommunities] = useState<string[]>([]);
 
   const handleHaptic = () => {
     if (Platform.OS !== 'web') {
@@ -66,6 +68,8 @@ export default function OnboardingScreen() {
       setStep(1);
     } else if (step === 1 && selectedCategories.length > 0) {
       setStep(2);
+    } else if (step === 2) {
+      setStep(3);
     }
   };
 
@@ -74,10 +78,19 @@ export default function OnboardingScreen() {
     setStep(prev => Math.max(0, prev - 1));
   };
 
+  const toggleCommunity = (communityId: string) => {
+    handleHaptic();
+    setSelectedCommunities(prev =>
+      prev.includes(communityId)
+        ? prev.filter(c => c !== communityId)
+        : [...prev, communityId]
+    );
+  };
+
   const handleFinish = async () => {
     handleHaptic();
     if (username.trim() && selectedCategories.length > 0) {
-      await completeOnboarding(username, selectedCategories, categoryPrivacy);
+      await completeOnboarding(username, selectedCategories, categoryPrivacy, selectedCommunities);
       router.replace('/(tabs)');
     }
   };
@@ -226,6 +239,64 @@ export default function OnboardingScreen() {
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.button, styles.flexButton]}
+          onPress={handleNext}
+        >
+          <LinearGradient
+            colors={['#667eea', '#764ba2']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.buttonGradient}
+          >
+            <Text style={styles.buttonText}>Continue</Text>
+          </LinearGradient>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+
+  const renderCommunities = () => (
+    <View style={styles.stepContainer}>
+      <Text style={styles.title}>Join Communities</Text>
+      <Text style={styles.subtitle}>Connect with like-minded people (optional)</Text>
+
+      <ScrollView style={styles.categoriesScroll} showsVerticalScrollIndicator={false}>
+        {AVAILABLE_COMMUNITIES.map(community => {
+          const isSelected = selectedCommunities.includes(community.id);
+          return (
+            <TouchableOpacity
+              key={community.id}
+              style={[
+                styles.communityCard,
+                isSelected && styles.communityCardSelected,
+              ]}
+              onPress={() => toggleCommunity(community.id)}
+            >
+              <View style={styles.communityHeader}>
+                <Text style={styles.communityIcon}>{community.icon}</Text>
+                <View style={styles.communityInfo}>
+                  <Text style={styles.communityName}>{community.name}</Text>
+                  <Text style={styles.communityDescription}>{community.description}</Text>
+                  <Text style={styles.communityMembers}>
+                    {community.memberCount?.toLocaleString()} members
+                  </Text>
+                </View>
+              </View>
+              {isSelected && (
+                <View style={styles.communityCheckmark}>
+                  <Text style={styles.checkmarkText}>✓</Text>
+                </View>
+              )}
+            </TouchableOpacity>
+          );
+        })}
+      </ScrollView>
+
+      <View style={styles.buttonRow}>
+        <TouchableOpacity style={styles.backButton} onPress={handleBack}>
+          <Text style={styles.backButtonText}>Back</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.button, styles.flexButton]}
           onPress={handleFinish}
         >
           <LinearGradient
@@ -245,7 +316,7 @@ export default function OnboardingScreen() {
     <LinearGradient colors={['#0f0c29', '#302b63', '#24243e']} style={styles.container}>
       <View style={{ paddingTop: insets.top }} />
       <View style={styles.progressContainer}>
-        {[0, 1, 2].map(i => (
+        {[0, 1, 2, 3].map(i => (
           <View
             key={i}
             style={[
@@ -259,6 +330,7 @@ export default function OnboardingScreen() {
       {step === 0 && renderWelcome()}
       {step === 1 && renderCategories()}
       {step === 2 && renderPrivacy()}
+      {step === 3 && renderCommunities()}
     </LinearGradient>
   );
 }
@@ -453,5 +525,55 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '600' as const,
+  },
+  communityCard: {
+    backgroundColor: '#ffffff10',
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  communityCardSelected: {
+    borderColor: '#667eea',
+    borderWidth: 3,
+    backgroundColor: '#667eea20',
+  },
+  communityHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  communityIcon: {
+    fontSize: 40,
+    marginRight: 16,
+  },
+  communityInfo: {
+    flex: 1,
+  },
+  communityName: {
+    fontSize: 18,
+    fontWeight: '600' as const,
+    color: '#fff',
+    marginBottom: 4,
+  },
+  communityDescription: {
+    fontSize: 14,
+    color: '#ffffff99',
+    marginBottom: 4,
+  },
+  communityMembers: {
+    fontSize: 12,
+    color: '#ffffff80',
+  },
+  communityCheckmark: {
+    position: 'absolute',
+    top: 16,
+    right: 16,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#667eea',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
