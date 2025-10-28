@@ -111,6 +111,7 @@ export interface LeaderboardEntry {
   isFriend?: boolean;
   inCommunity?: boolean;
   isMasked?: boolean;
+  privacySettings?: Record<CategoryType, CategoryProgress>;
 }
 
 export interface DailyStreak {

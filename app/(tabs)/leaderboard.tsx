@@ -13,12 +13,12 @@ import { Trophy, Users, UserCheck, Lock, Info } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { useUser } from '@/context/UserContext';
 import { CATEGORY_DATA } from '@/constants/categories';
-import { CategoryType, LeaderboardEntry } from '@/types';
+import { CategoryType, LeaderboardEntry, CategoryProgress } from '@/types';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Avatar from '@/components/Avatar';
 
 type AudienceFilter = 'all' | 'communities' | 'friends';
-type TimeWindow = 'today' | '7d' | '30d';
+type TimeWindow = 'today' | '7d' | '30d' | 'alltime';
 
 export default function LeaderboardScreen() {
   const router = useRouter();
@@ -26,7 +26,7 @@ export default function LeaderboardScreen() {
   const { user } = useUser();
   const [selectedCategory, setSelectedCategory] = useState<CategoryType | 'all'>('all');
   const [audienceFilter, setAudienceFilter] = useState<AudienceFilter>('all');
-  const [timeWindow, setTimeWindow] = useState<TimeWindow>('30d');
+  const [timeWindow, setTimeWindow] = useState<TimeWindow>('alltime');
 
   const mockLeaderboard = useMemo(() => {
     const entries: LeaderboardEntry[] = [];
@@ -49,6 +49,7 @@ export default function LeaderboardScreen() {
       isFriend: false,
       inCommunity: user.communities.length > 0,
       isMasked: false,
+      privacySettings: user.categories,
     };
     entries.push(userEntry);
 
@@ -60,9 +61,6 @@ export default function LeaderboardScreen() {
       const randomVariation = Math.floor(Math.random() * 200) - 100;
       const totalXP = Math.max(0, baseXP + randomVariation);
       
-      const privacySetting = Math.random() > 0.8 ? 'private' : 'public';
-      const isMasked = privacySetting === 'private' && !isFriend;
-      
       const categoryXP: Record<CategoryType, number> = {
         health: Math.floor(Math.random() * (totalXP * 0.3)),
         wealth: Math.floor(Math.random() * (totalXP * 0.25)),
@@ -70,6 +68,15 @@ export default function LeaderboardScreen() {
         discipline: Math.floor(Math.random() * (totalXP * 0.15)),
         mental: Math.floor(Math.random() * (totalXP * 0.1)),
         recovery: Math.floor(Math.random() * (totalXP * 0.1)),
+      };
+
+      const mockPrivacySettings: Record<CategoryType, CategoryProgress> = {
+        health: { xp: categoryXP.health, level: 1, privacy: Math.random() > 0.7 ? 'private' : (Math.random() > 0.5 ? 'friends' : 'public'), enabled: true },
+        wealth: { xp: categoryXP.wealth, level: 1, privacy: Math.random() > 0.7 ? 'private' : (Math.random() > 0.5 ? 'friends' : 'public'), enabled: true },
+        social: { xp: categoryXP.social, level: 1, privacy: Math.random() > 0.7 ? 'private' : (Math.random() > 0.5 ? 'friends' : 'public'), enabled: true },
+        discipline: { xp: categoryXP.discipline, level: 1, privacy: Math.random() > 0.7 ? 'private' : (Math.random() > 0.5 ? 'friends' : 'public'), enabled: true },
+        mental: { xp: categoryXP.mental, level: 1, privacy: Math.random() > 0.7 ? 'private' : (Math.random() > 0.5 ? 'friends' : 'public'), enabled: true },
+        recovery: { xp: categoryXP.recovery, level: 1, privacy: Math.random() > 0.7 ? 'private' : (Math.random() > 0.5 ? 'friends' : 'public'), enabled: true },
       };
 
       entries.push({
@@ -82,7 +89,8 @@ export default function LeaderboardScreen() {
         categoryXP,
         isFriend,
         inCommunity,
-        isMasked,
+        isMasked: false,
+        privacySettings: mockPrivacySettings,
       });
     }
 
@@ -94,6 +102,28 @@ export default function LeaderboardScreen() {
       filtered = entries.filter(e => e.userId === user.id || e.inCommunity);
     }
 
+    filtered = filtered.filter(entry => {
+      if (entry.userId === user.id) return true;
+      
+      if (!entry.privacySettings) return true;
+      
+      if (selectedCategory === 'all') {
+        return true;
+      }
+      
+      const categoryPrivacy = entry.privacySettings[selectedCategory]?.privacy;
+      
+      if (categoryPrivacy === 'private') {
+        return false;
+      }
+      
+      if (categoryPrivacy === 'friends' && !entry.isFriend) {
+        return false;
+      }
+      
+      return true;
+    });
+
     filtered = filtered.sort((a, b) => {
       const aXP = selectedCategory === 'all' ? a.totalXP : (a.categoryXP?.[selectedCategory] || 0);
       const bXP = selectedCategory === 'all' ? b.totalXP : (b.categoryXP?.[selectedCategory] || 0);
@@ -102,11 +132,22 @@ export default function LeaderboardScreen() {
       return a.username.localeCompare(b.username);
     });
 
-    return filtered.map((entry, index) => ({
-      ...entry,
-      rank: index + 1,
-    }));
-  }, [user, selectedCategory, audienceFilter, timeWindow]);
+    const withRanks = filtered.map((entry, index) => {
+      const shouldMask = entry.userId !== user.id && 
+        entry.privacySettings && 
+        selectedCategory !== 'all' && 
+        entry.privacySettings[selectedCategory]?.privacy === 'friends' && 
+        !entry.isFriend;
+      
+      return {
+        ...entry,
+        rank: index + 1,
+        isMasked: shouldMask,
+      };
+    });
+
+    return withRanks;
+  }, [user, selectedCategory, audienceFilter]);
 
   const handleCategoryChange = (category: CategoryType | 'all') => {
     if (Platform.OS !== 'web') {
@@ -287,6 +328,23 @@ export default function LeaderboardScreen() {
                   30 Days
                 </Text>
               </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[
+                  styles.timeButton,
+                  timeWindow === 'alltime' && styles.timeButtonActive,
+                ]}
+                onPress={() => handleTimeWindowChange('alltime')}
+              >
+                <Text
+                  style={[
+                    styles.timeButtonText,
+                    timeWindow === 'alltime' && styles.timeButtonTextActive,
+                  ]}
+                >
+                  All Time
+                </Text>
+              </TouchableOpacity>
             </View>
           </View>
 
@@ -342,7 +400,137 @@ export default function LeaderboardScreen() {
                 <Text style={styles.emptyStateText}>{getEmptyStateMessage()}</Text>
               </View>
             ) : (
-              mockLeaderboard.map((entry) => {
+              <>
+                {mockLeaderboard.length >= 3 && (
+                  <View style={styles.podiumContainer}>
+                    <View style={styles.podiumRow}>
+                      <View style={[styles.podiumPlace, styles.podiumSecond]}>
+                        <TouchableOpacity
+                          onPress={() => {
+                            if (mockLeaderboard[1].userId !== user.id) {
+                              if (Platform.OS !== 'web') {
+                                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                              }
+                              router.push({
+                                pathname: '/user-profile' as any,
+                                params: { userId: mockLeaderboard[1].userId },
+                              });
+                            }
+                          }}
+                          disabled={mockLeaderboard[1].userId === user.id}
+                          activeOpacity={mockLeaderboard[1].userId === user.id ? 1 : 0.7}
+                        >
+                          <View style={styles.podiumPillar}>
+                            <Text style={styles.podiumRank}>🥈</Text>
+                            <View style={styles.podiumAvatarContainer}>
+                              <Avatar avatar={mockLeaderboard[1].avatar} size={50} />
+                            </View>
+                            <Text style={styles.podiumUsername} numberOfLines={1}>
+                              {mockLeaderboard[1].username}
+                            </Text>
+                            {mockLeaderboard[1].isMasked ? (
+                              <View style={styles.podiumXP}>
+                                <Lock size={12} color="#ffffff60" />
+                              </View>
+                            ) : (
+                              <Text style={styles.podiumXP}>
+                                {(selectedCategory === 'all' 
+                                  ? mockLeaderboard[1].totalXP 
+                                  : (mockLeaderboard[1].categoryXP?.[selectedCategory] || 0)
+                                ).toLocaleString()}
+                              </Text>
+                            )}
+                          </View>
+                          <View style={[styles.podiumBase, { height: 100, backgroundColor: '#C0C0C0' }]} />
+                        </TouchableOpacity>
+                      </View>
+
+                      <View style={[styles.podiumPlace, styles.podiumFirst]}>
+                        <TouchableOpacity
+                          onPress={() => {
+                            if (mockLeaderboard[0].userId !== user.id) {
+                              if (Platform.OS !== 'web') {
+                                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                              }
+                              router.push({
+                                pathname: '/user-profile' as any,
+                                params: { userId: mockLeaderboard[0].userId },
+                              });
+                            }
+                          }}
+                          disabled={mockLeaderboard[0].userId === user.id}
+                          activeOpacity={mockLeaderboard[0].userId === user.id ? 1 : 0.7}
+                        >
+                          <View style={styles.podiumPillar}>
+                            <Text style={styles.podiumRank}>🥇</Text>
+                            <View style={styles.podiumAvatarContainer}>
+                              <Avatar avatar={mockLeaderboard[0].avatar} size={60} />
+                            </View>
+                            <Text style={styles.podiumUsername} numberOfLines={1}>
+                              {mockLeaderboard[0].username}
+                            </Text>
+                            {mockLeaderboard[0].isMasked ? (
+                              <View style={styles.podiumXP}>
+                                <Lock size={12} color="#ffffff60" />
+                              </View>
+                            ) : (
+                              <Text style={styles.podiumXP}>
+                                {(selectedCategory === 'all' 
+                                  ? mockLeaderboard[0].totalXP 
+                                  : (mockLeaderboard[0].categoryXP?.[selectedCategory] || 0)
+                                ).toLocaleString()}
+                              </Text>
+                            )}
+                          </View>
+                          <View style={[styles.podiumBase, { height: 130, backgroundColor: '#FFD700' }]} />
+                        </TouchableOpacity>
+                      </View>
+
+                      <View style={[styles.podiumPlace, styles.podiumThird]}>
+                        <TouchableOpacity
+                          onPress={() => {
+                            if (mockLeaderboard[2].userId !== user.id) {
+                              if (Platform.OS !== 'web') {
+                                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                              }
+                              router.push({
+                                pathname: '/user-profile' as any,
+                                params: { userId: mockLeaderboard[2].userId },
+                              });
+                            }
+                          }}
+                          disabled={mockLeaderboard[2].userId === user.id}
+                          activeOpacity={mockLeaderboard[2].userId === user.id ? 1 : 0.7}
+                        >
+                          <View style={styles.podiumPillar}>
+                            <Text style={styles.podiumRank}>🥉</Text>
+                            <View style={styles.podiumAvatarContainer}>
+                              <Avatar avatar={mockLeaderboard[2].avatar} size={50} />
+                            </View>
+                            <Text style={styles.podiumUsername} numberOfLines={1}>
+                              {mockLeaderboard[2].username}
+                            </Text>
+                            {mockLeaderboard[2].isMasked ? (
+                              <View style={styles.podiumXP}>
+                                <Lock size={12} color="#ffffff60" />
+                              </View>
+                            ) : (
+                              <Text style={styles.podiumXP}>
+                                {(selectedCategory === 'all' 
+                                  ? mockLeaderboard[2].totalXP 
+                                  : (mockLeaderboard[2].categoryXP?.[selectedCategory] || 0)
+                                ).toLocaleString()}
+                              </Text>
+                            )}
+                          </View>
+                          <View style={[styles.podiumBase, { height: 80, backgroundColor: '#CD7F32' }]} />
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  </View>
+                )}
+
+                {mockLeaderboard.slice(3).map((entry) => {
                 const isCurrentUser = entry.userId === user.id;
                 const xpToDisplay = selectedCategory === 'all' 
                   ? entry.totalXP 
@@ -396,7 +584,8 @@ export default function LeaderboardScreen() {
                     </View>
                   </TouchableOpacity>
                 );
-              })
+              })}
+              </>
             )}
           </View>
 
@@ -622,5 +811,63 @@ const styles = StyleSheet.create({
     fontWeight: '600' as const,
     color: '#ffffff99',
     textAlign: 'center',
+  },
+  podiumContainer: {
+    marginBottom: 32,
+    paddingTop: 20,
+  },
+  podiumRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'center',
+    gap: 12,
+  },
+  podiumPlace: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  podiumFirst: {
+    marginBottom: 30,
+  },
+  podiumSecond: {
+    marginBottom: 0,
+  },
+  podiumThird: {
+    marginBottom: -20,
+  },
+  podiumPillar: {
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 12,
+  },
+  podiumRank: {
+    fontSize: 28,
+  },
+  podiumAvatarContainer: {
+    borderWidth: 3,
+    borderColor: '#fff',
+    borderRadius: 50,
+    padding: 2,
+  },
+  podiumUsername: {
+    fontSize: 14,
+    fontWeight: '700' as const,
+    color: '#fff',
+    maxWidth: 100,
+    textAlign: 'center',
+  },
+  podiumXP: {
+    fontSize: 12,
+    fontWeight: '600' as const,
+    color: '#FFD700',
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  podiumBase: {
+    width: '100%',
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
+    borderWidth: 2,
+    borderColor: '#ffffff40',
   },
 });
