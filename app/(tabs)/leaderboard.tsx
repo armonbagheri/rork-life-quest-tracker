@@ -187,9 +187,6 @@ export default function LeaderboardScreen() {
   };
 
   const getRankDisplay = (rank: number) => {
-    if (rank === 1) return '🥇';
-    if (rank === 2) return '🥈';
-    if (rank === 3) return '🥉';
     return `#${rank}`;
   };
 
@@ -216,183 +213,188 @@ export default function LeaderboardScreen() {
             </View>
           )}
 
-          <View style={styles.filtersSection}>
-            <Text style={styles.filterLabel}>Audience</Text>
-            <View style={styles.audienceFilters}>
-              <TouchableOpacity
-                style={[
-                  styles.audienceButton,
-                  audienceFilter === 'all' && styles.audienceButtonActive,
-                ]}
-                onPress={() => handleAudienceChange('all')}
-              >
-                <Users size={16} color={audienceFilter === 'all' ? '#fff' : '#ffffff99'} />
-                <Text
+          <View style={styles.filtersContainer}>
+            <View style={styles.filterRow}>
+              <Text style={styles.filterLabel}>Audience</Text>
+              <View style={styles.audienceFilters}>
+                <TouchableOpacity
                   style={[
-                    styles.audienceButtonText,
-                    audienceFilter === 'all' && styles.audienceButtonTextActive,
+                    styles.audienceButton,
+                    audienceFilter === 'all' && styles.audienceButtonActive,
                   ]}
+                  onPress={() => handleAudienceChange('all')}
                 >
-                  All Users
-                </Text>
-              </TouchableOpacity>
+                  <Users size={18} color={audienceFilter === 'all' ? '#fff' : '#ffffff80'} />
+                  <Text
+                    style={[
+                      styles.audienceButtonText,
+                      audienceFilter === 'all' && styles.audienceButtonTextActive,
+                    ]}
+                  >
+                    All
+                  </Text>
+                </TouchableOpacity>
 
-              <TouchableOpacity
-                style={[
-                  styles.audienceButton,
-                  audienceFilter === 'communities' && styles.audienceButtonActive,
-                ]}
-                onPress={() => handleAudienceChange('communities')}
-              >
-                <Trophy size={16} color={audienceFilter === 'communities' ? '#fff' : '#ffffff99'} />
-                <Text
+                <TouchableOpacity
                   style={[
-                    styles.audienceButtonText,
-                    audienceFilter === 'communities' && styles.audienceButtonTextActive,
+                    styles.audienceButton,
+                    audienceFilter === 'communities' && styles.audienceButtonActive,
                   ]}
+                  onPress={() => handleAudienceChange('communities')}
                 >
-                  My Communities
-                </Text>
-              </TouchableOpacity>
+                  <Trophy size={18} color={audienceFilter === 'communities' ? '#fff' : '#ffffff80'} />
+                  <Text
+                    style={[
+                      styles.audienceButtonText,
+                      audienceFilter === 'communities' && styles.audienceButtonTextActive,
+                    ]}
+                  >
+                    Communities
+                  </Text>
+                </TouchableOpacity>
 
-              <TouchableOpacity
-                style={[
-                  styles.audienceButton,
-                  audienceFilter === 'friends' && styles.audienceButtonActive,
-                ]}
-                onPress={() => handleAudienceChange('friends')}
-              >
-                <UserCheck size={16} color={audienceFilter === 'friends' ? '#fff' : '#ffffff99'} />
-                <Text
+                <TouchableOpacity
                   style={[
-                    styles.audienceButtonText,
-                    audienceFilter === 'friends' && styles.audienceButtonTextActive,
+                    styles.audienceButton,
+                    audienceFilter === 'friends' && styles.audienceButtonActive,
                   ]}
+                  onPress={() => handleAudienceChange('friends')}
                 >
-                  Friends
-                </Text>
-              </TouchableOpacity>
+                  <UserCheck size={18} color={audienceFilter === 'friends' ? '#fff' : '#ffffff80'} />
+                  <Text
+                    style={[
+                      styles.audienceButtonText,
+                      audienceFilter === 'friends' && styles.audienceButtonTextActive,
+                    ]}
+                  >
+                    Friends
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            <View style={styles.filterRow}>
+              <Text style={styles.filterLabel}>Period</Text>
+              <View style={styles.timeFilters}>
+                <TouchableOpacity
+                  style={[
+                    styles.timeButton,
+                    timeWindow === 'today' && styles.timeButtonActive,
+                  ]}
+                  onPress={() => handleTimeWindowChange('today')}
+                >
+                  <Text
+                    style={[
+                      styles.timeButtonText,
+                      timeWindow === 'today' && styles.timeButtonTextActive,
+                    ]}
+                  >
+                    Today
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[
+                    styles.timeButton,
+                    timeWindow === '7d' && styles.timeButtonActive,
+                  ]}
+                  onPress={() => handleTimeWindowChange('7d')}
+                >
+                  <Text
+                    style={[
+                      styles.timeButtonText,
+                      timeWindow === '7d' && styles.timeButtonTextActive,
+                    ]}
+                  >
+                    7d
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[
+                    styles.timeButton,
+                    timeWindow === '30d' && styles.timeButtonActive,
+                  ]}
+                  onPress={() => handleTimeWindowChange('30d')}
+                >
+                  <Text
+                    style={[
+                      styles.timeButtonText,
+                      timeWindow === '30d' && styles.timeButtonTextActive,
+                    ]}
+                  >
+                    30d
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[
+                    styles.timeButton,
+                    timeWindow === 'alltime' && styles.timeButtonActive,
+                  ]}
+                  onPress={() => handleTimeWindowChange('alltime')}
+                >
+                  <Text
+                    style={[
+                      styles.timeButtonText,
+                      timeWindow === 'alltime' && styles.timeButtonTextActive,
+                    ]}
+                  >
+                    All
+                  </Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
 
-          <View style={styles.filtersSection}>
-            <Text style={styles.filterLabel}>Time Window</Text>
-            <View style={styles.timeFilters}>
-              <TouchableOpacity
-                style={[
-                  styles.timeButton,
-                  timeWindow === 'today' && styles.timeButtonActive,
-                ]}
-                onPress={() => handleTimeWindowChange('today')}
-              >
-                <Text
-                  style={[
-                    styles.timeButtonText,
-                    timeWindow === 'today' && styles.timeButtonTextActive,
-                  ]}
-                >
-                  Today
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[
-                  styles.timeButton,
-                  timeWindow === '7d' && styles.timeButtonActive,
-                ]}
-                onPress={() => handleTimeWindowChange('7d')}
-              >
-                <Text
-                  style={[
-                    styles.timeButtonText,
-                    timeWindow === '7d' && styles.timeButtonTextActive,
-                  ]}
-                >
-                  7 Days
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[
-                  styles.timeButton,
-                  timeWindow === '30d' && styles.timeButtonActive,
-                ]}
-                onPress={() => handleTimeWindowChange('30d')}
-              >
-                <Text
-                  style={[
-                    styles.timeButtonText,
-                    timeWindow === '30d' && styles.timeButtonTextActive,
-                  ]}
-                >
-                  30 Days
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[
-                  styles.timeButton,
-                  timeWindow === 'alltime' && styles.timeButtonActive,
-                ]}
-                onPress={() => handleTimeWindowChange('alltime')}
-              >
-                <Text
-                  style={[
-                    styles.timeButtonText,
-                    timeWindow === 'alltime' && styles.timeButtonTextActive,
-                  ]}
-                >
-                  All Time
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.categoryFilterContainer}
-          >
-            <TouchableOpacity
-              style={[
-                styles.categoryFilterButton,
-                selectedCategory === 'all' && styles.categoryFilterButtonActive,
-              ]}
-              onPress={() => handleCategoryChange('all')}
+          <View style={styles.categorySection}>
+            <Text style={[styles.filterLabel, { marginBottom: 12 }]}>Category</Text>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.categoryFilterContainer}
             >
-              <Text
-                style={[
-                  styles.categoryFilterButtonText,
-                  selectedCategory === 'all' && styles.categoryFilterButtonTextActive,
-                ]}
-              >
-                All Categories
-              </Text>
-            </TouchableOpacity>
-            {Object.values(CATEGORY_DATA).map(category => (
               <TouchableOpacity
-                key={category.id}
                 style={[
                   styles.categoryFilterButton,
-                  selectedCategory === category.id && styles.categoryFilterButtonActive,
-                  selectedCategory === category.id && {
-                    borderColor: category.color,
-                    backgroundColor: `${category.color}20`,
-                  },
+                  selectedCategory === 'all' && styles.categoryFilterButtonActive,
                 ]}
-                onPress={() => handleCategoryChange(category.id)}
+                onPress={() => handleCategoryChange('all')}
               >
                 <Text
                   style={[
                     styles.categoryFilterButtonText,
-                    selectedCategory === category.id && styles.categoryFilterButtonTextActive,
+                    selectedCategory === 'all' && styles.categoryFilterButtonTextActive,
                   ]}
                 >
-                  {category.name}
+                  All
                 </Text>
               </TouchableOpacity>
-            ))}
-          </ScrollView>
+              {Object.values(CATEGORY_DATA).map(category => (
+                <TouchableOpacity
+                  key={category.id}
+                  style={[
+                    styles.categoryFilterButton,
+                    selectedCategory === category.id && styles.categoryFilterButtonActive,
+                    selectedCategory === category.id && {
+                      borderColor: category.color,
+                      backgroundColor: `${category.color}30`,
+                    },
+                  ]}
+                  onPress={() => handleCategoryChange(category.id)}
+                >
+                  <Text
+                    style={[
+                      styles.categoryFilterButtonText,
+                      selectedCategory === category.id && styles.categoryFilterButtonTextActive,
+                    ]}
+                  >
+                    {category.name}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
 
           <View style={styles.section}>
             {mockLeaderboard.length === 0 ? (
@@ -403,6 +405,7 @@ export default function LeaderboardScreen() {
               <>
                 {mockLeaderboard.length >= 3 && (
                   <View style={styles.podiumContainer}>
+                    <Text style={styles.topThreeTitle}>Top 3</Text>
                     <View style={styles.podiumRow}>
                       <View style={[styles.podiumPlace, styles.podiumSecond]}>
                         <TouchableOpacity
@@ -421,27 +424,29 @@ export default function LeaderboardScreen() {
                           activeOpacity={mockLeaderboard[1].userId === user.id ? 1 : 0.7}
                         >
                           <View style={styles.podiumPillar}>
-                            <Text style={styles.podiumRank}>🥈</Text>
-                            <View style={styles.podiumAvatarContainer}>
-                              <Avatar avatar={mockLeaderboard[1].avatar} size={50} />
+                            <View style={styles.rankBadge}>
+                              <Text style={[styles.rankBadgeText, { color: '#C0C0C0' }]}>2</Text>
+                            </View>
+                            <View style={[styles.podiumAvatarContainer, { borderColor: '#C0C0C0' }]}>
+                              <Avatar avatar={mockLeaderboard[1].avatar} size={54} />
                             </View>
                             <Text style={styles.podiumUsername} numberOfLines={1}>
                               {mockLeaderboard[1].username}
                             </Text>
                             {mockLeaderboard[1].isMasked ? (
-                              <View style={styles.podiumXP}>
-                                <Lock size={12} color="#ffffff60" />
+                              <View style={styles.podiumXPContainer}>
+                                <Lock size={14} color="#ffffff60" />
                               </View>
                             ) : (
                               <Text style={styles.podiumXP}>
                                 {(selectedCategory === 'all' 
                                   ? mockLeaderboard[1].totalXP 
                                   : (mockLeaderboard[1].categoryXP?.[selectedCategory] || 0)
-                                ).toLocaleString()}
+                                ).toLocaleString()} XP
                               </Text>
                             )}
                           </View>
-                          <View style={[styles.podiumBase, { height: 100, backgroundColor: '#C0C0C0' }]} />
+                          <View style={[styles.podiumBase, { height: 100, backgroundColor: '#C0C0C040' }]} />
                         </TouchableOpacity>
                       </View>
 
@@ -462,27 +467,32 @@ export default function LeaderboardScreen() {
                           activeOpacity={mockLeaderboard[0].userId === user.id ? 1 : 0.7}
                         >
                           <View style={styles.podiumPillar}>
-                            <Text style={styles.podiumRank}>🥇</Text>
-                            <View style={styles.podiumAvatarContainer}>
-                              <Avatar avatar={mockLeaderboard[0].avatar} size={60} />
+                            <View style={styles.crownContainer}>
+                              <Text style={styles.crown}>👑</Text>
                             </View>
-                            <Text style={styles.podiumUsername} numberOfLines={1}>
+                            <View style={[styles.rankBadge, styles.rankBadgeFirst]}>
+                              <Text style={[styles.rankBadgeText, { color: '#FFD700' }]}>1</Text>
+                            </View>
+                            <View style={[styles.podiumAvatarContainer, { borderColor: '#FFD700' }]}>
+                              <Avatar avatar={mockLeaderboard[0].avatar} size={64} />
+                            </View>
+                            <Text style={[styles.podiumUsername, { fontSize: 15, fontWeight: '800' }]} numberOfLines={1}>
                               {mockLeaderboard[0].username}
                             </Text>
                             {mockLeaderboard[0].isMasked ? (
-                              <View style={styles.podiumXP}>
-                                <Lock size={12} color="#ffffff60" />
+                              <View style={styles.podiumXPContainer}>
+                                <Lock size={14} color="#ffffff60" />
                               </View>
                             ) : (
-                              <Text style={styles.podiumXP}>
+                              <Text style={[styles.podiumXP, { fontSize: 14, fontWeight: '700' }]}>
                                 {(selectedCategory === 'all' 
                                   ? mockLeaderboard[0].totalXP 
                                   : (mockLeaderboard[0].categoryXP?.[selectedCategory] || 0)
-                                ).toLocaleString()}
+                                ).toLocaleString()} XP
                               </Text>
                             )}
                           </View>
-                          <View style={[styles.podiumBase, { height: 130, backgroundColor: '#FFD700' }]} />
+                          <View style={[styles.podiumBase, { height: 130, backgroundColor: '#FFD70040' }]} />
                         </TouchableOpacity>
                       </View>
 
@@ -503,27 +513,29 @@ export default function LeaderboardScreen() {
                           activeOpacity={mockLeaderboard[2].userId === user.id ? 1 : 0.7}
                         >
                           <View style={styles.podiumPillar}>
-                            <Text style={styles.podiumRank}>🥉</Text>
-                            <View style={styles.podiumAvatarContainer}>
-                              <Avatar avatar={mockLeaderboard[2].avatar} size={50} />
+                            <View style={styles.rankBadge}>
+                              <Text style={[styles.rankBadgeText, { color: '#CD7F32' }]}>3</Text>
+                            </View>
+                            <View style={[styles.podiumAvatarContainer, { borderColor: '#CD7F32' }]}>
+                              <Avatar avatar={mockLeaderboard[2].avatar} size={54} />
                             </View>
                             <Text style={styles.podiumUsername} numberOfLines={1}>
                               {mockLeaderboard[2].username}
                             </Text>
                             {mockLeaderboard[2].isMasked ? (
-                              <View style={styles.podiumXP}>
-                                <Lock size={12} color="#ffffff60" />
+                              <View style={styles.podiumXPContainer}>
+                                <Lock size={14} color="#ffffff60" />
                               </View>
                             ) : (
                               <Text style={styles.podiumXP}>
                                 {(selectedCategory === 'all' 
                                   ? mockLeaderboard[2].totalXP 
                                   : (mockLeaderboard[2].categoryXP?.[selectedCategory] || 0)
-                                ).toLocaleString()}
+                                ).toLocaleString()} XP
                               </Text>
                             )}
                           </View>
-                          <View style={[styles.podiumBase, { height: 80, backgroundColor: '#CD7F32' }]} />
+                          <View style={[styles.podiumBase, { height: 80, backgroundColor: '#CD7F3240' }]} />
                         </TouchableOpacity>
                       </View>
                     </View>
@@ -638,20 +650,31 @@ const styles = StyleSheet.create({
     color: '#4ECDC4',
     fontWeight: '500' as const,
   },
-  filtersSection: {
+  filtersContainer: {
+    backgroundColor: '#ffffff08',
+    borderRadius: 16,
+    padding: 16,
     marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#ffffff15',
+  },
+  filterRow: {
+    marginBottom: 16,
   },
   filterLabel: {
-    fontSize: 14,
-    fontWeight: '600' as const,
-    color: '#ffffff99',
-    marginBottom: 12,
+    fontSize: 12,
+    fontWeight: '700' as const,
+    color: '#ffffff70',
+    marginBottom: 10,
     textTransform: 'uppercase' as const,
-    letterSpacing: 1,
+    letterSpacing: 1.5,
+  },
+  categorySection: {
+    marginBottom: 24,
   },
   audienceFilters: {
     flexDirection: 'row',
-    gap: 8,
+    gap: 10,
   },
   audienceButton: {
     flex: 1,
@@ -659,71 +682,70 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 6,
-    paddingVertical: 12,
-    paddingHorizontal: 12,
-    borderRadius: 12,
-    backgroundColor: '#ffffff10',
+    paddingVertical: 14,
+    paddingHorizontal: 10,
+    borderRadius: 14,
+    backgroundColor: '#1a1a2e',
     borderWidth: 2,
-    borderColor: 'transparent',
+    borderColor: '#ffffff15',
   },
   audienceButtonActive: {
-    backgroundColor: '#667eea',
-    borderColor: '#fff',
+    backgroundColor: '#667eea30',
+    borderColor: '#667eea',
   },
   audienceButtonText: {
-    fontSize: 12,
-    fontWeight: '600' as const,
-    color: '#ffffff99',
+    fontSize: 13,
+    fontWeight: '700' as const,
+    color: '#ffffff80',
   },
   audienceButtonTextActive: {
     color: '#fff',
   },
   timeFilters: {
     flexDirection: 'row',
-    gap: 8,
+    gap: 10,
   },
   timeButton: {
     flex: 1,
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 12,
-    backgroundColor: '#ffffff10',
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    borderRadius: 14,
+    backgroundColor: '#1a1a2e',
     borderWidth: 2,
-    borderColor: 'transparent',
+    borderColor: '#ffffff15',
     alignItems: 'center',
   },
   timeButtonActive: {
-    backgroundColor: '#4ECDC4',
-    borderColor: '#fff',
+    backgroundColor: '#4ECDC430',
+    borderColor: '#4ECDC4',
   },
   timeButtonText: {
-    fontSize: 14,
-    fontWeight: '600' as const,
-    color: '#ffffff99',
+    fontSize: 13,
+    fontWeight: '700' as const,
+    color: '#ffffff80',
   },
   timeButtonTextActive: {
     color: '#fff',
   },
   categoryFilterContainer: {
-    gap: 8,
-    marginBottom: 24,
+    gap: 10,
+    paddingRight: 20,
   },
   categoryFilterButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
     borderRadius: 20,
     backgroundColor: '#ffffff10',
     borderWidth: 2,
-    borderColor: 'transparent',
+    borderColor: '#ffffff15',
   },
   categoryFilterButtonActive: {
-    backgroundColor: '#667eea',
     borderColor: '#fff',
   },
   categoryFilterButtonText: {
     fontSize: 14,
-    fontWeight: '600' as const,
-    color: '#ffffff99',
+    fontWeight: '700' as const,
+    color: '#ffffff80',
   },
   categoryFilterButtonTextActive: {
     color: '#fff',
@@ -815,59 +837,100 @@ const styles = StyleSheet.create({
   podiumContainer: {
     marginBottom: 32,
     paddingTop: 20,
+    backgroundColor: '#ffffff08',
+    borderRadius: 20,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: '#ffffff15',
+  },
+  topThreeTitle: {
+    fontSize: 18,
+    fontWeight: '800' as const,
+    color: '#fff',
+    textAlign: 'center',
+    marginBottom: 20,
+    textTransform: 'uppercase' as const,
+    letterSpacing: 2,
   },
   podiumRow: {
     flexDirection: 'row',
     alignItems: 'flex-end',
     justifyContent: 'center',
-    gap: 12,
+    gap: 16,
   },
   podiumPlace: {
     flex: 1,
     alignItems: 'center',
   },
   podiumFirst: {
-    marginBottom: 30,
+    marginBottom: 35,
   },
   podiumSecond: {
-    marginBottom: 0,
+    marginBottom: 5,
   },
   podiumThird: {
-    marginBottom: -20,
+    marginBottom: -15,
+  },
+  crownContainer: {
+    position: 'absolute',
+    top: -35,
+  },
+  crown: {
+    fontSize: 32,
+  },
+  rankBadge: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#1a1a2e',
+    borderWidth: 2,
+    borderColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 8,
+  },
+  rankBadgeFirst: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+  },
+  rankBadgeText: {
+    fontSize: 16,
+    fontWeight: '900' as const,
   },
   podiumPillar: {
     alignItems: 'center',
     gap: 8,
     marginBottom: 12,
   },
-  podiumRank: {
-    fontSize: 28,
-  },
   podiumAvatarContainer: {
-    borderWidth: 3,
-    borderColor: '#fff',
+    borderWidth: 4,
     borderRadius: 50,
     padding: 2,
   },
   podiumUsername: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '700' as const,
     color: '#fff',
     maxWidth: 100,
     textAlign: 'center',
   },
-  podiumXP: {
-    fontSize: 12,
-    fontWeight: '600' as const,
-    color: '#FFD700',
+  podiumXPContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+  },
+  podiumXP: {
+    fontSize: 12,
+    fontWeight: '700' as const,
+    color: '#FFD700',
+    textAlign: 'center',
   },
   podiumBase: {
     width: '100%',
-    borderTopLeftRadius: 12,
-    borderTopRightRadius: 12,
-    borderWidth: 2,
-    borderColor: '#ffffff40',
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    borderWidth: 1,
+    borderColor: '#ffffff20',
   },
 });
