@@ -70,22 +70,29 @@ export default function PostToFeedScreen() {
   };
 
   const handleTakePhoto = async () => {
+    console.log('Take photo button pressed');
     if (Platform.OS !== 'web') {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
 
     if (!cameraPermission) {
+      console.log('Camera permission object not loaded yet');
       return;
     }
 
+    console.log('Camera permission status:', cameraPermission.granted);
+
     if (!cameraPermission.granted) {
+      console.log('Requesting camera permission...');
       const { granted } = await requestCameraPermission();
+      console.log('Permission granted:', granted);
       if (!granted) {
         Alert.alert('Permission needed', 'We need access to your camera to take photos.');
         return;
       }
     }
 
+    console.log('Opening camera...');
     setShowCamera(true);
   };
 
@@ -267,7 +274,7 @@ export default function PostToFeedScreen() {
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      {showCamera && cameraPermission?.granted && (
+      {showCamera && (
         <View style={StyleSheet.absoluteFill}>
           <CameraView
             style={styles.camera}
