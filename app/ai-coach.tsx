@@ -155,9 +155,12 @@ export default function AICoachScreen() {
   const handleDeclineQuest = () => {
     const currentPendingQuest = pendingQuest;
     setPendingQuest(null);
-    if (currentPendingQuest) {
-      sendMessage(`I'd like to revise the quest "${currentPendingQuest.title}". Can you suggest some improvements or alternatives?`);
-    }
+    
+    setTimeout(() => {
+      if (currentPendingQuest) {
+        sendMessage(`I'd like to revise the quest "${currentPendingQuest.title}". Can you suggest some improvements or alternatives?`);
+      }
+    }, 300);
   };
 
   return (
@@ -236,8 +239,10 @@ export default function AICoachScreen() {
               </View>
             </View>
           ) : (
-            messages.map((m, idx) => (
-              <View key={m.id || idx} style={{ marginVertical: 8 }}>
+            messages.map((m, idx) => {
+              const messageKey = m.id || `message-${idx}-${Date.now()}`;
+              return (
+              <View key={messageKey} style={{ marginVertical: 8 }}>
                 {m.role === 'user' ? (
                   <View style={styles.userMessage}>
                     <Text style={styles.userMessageText}>
@@ -284,7 +289,8 @@ export default function AICoachScreen() {
                   </View>
                 )}
               </View>
-            ))
+            );
+            })
           )}
           {error && (
             <View style={styles.errorContainer}>
