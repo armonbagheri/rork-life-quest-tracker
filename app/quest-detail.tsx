@@ -96,16 +96,17 @@ export default function QuestDetailScreen() {
 
   const handleStartQuest = async () => {
     try {
+      await activateQuest(quest as Omit<Quest, 'id' | 'status' | 'startDate'>);
       if (Platform.OS !== 'web') {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       }
-      await activateQuest(quest as Omit<Quest, 'id' | 'status' | 'startDate'>);
       router.back();
     } catch (error) {
       if (Platform.OS !== 'web') {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
       }
       const errorMessage = error instanceof Error ? error.message : 'Failed to start quest';
+      console.log('[QuestDetail] Error starting quest:', errorMessage);
       Alert.alert('Cannot Start Quest', errorMessage, [{ text: 'OK' }]);
     }
   };
