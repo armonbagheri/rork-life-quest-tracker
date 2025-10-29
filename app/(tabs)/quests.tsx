@@ -16,13 +16,13 @@ import { useUser } from '@/context/UserContext';
 import { CATEGORY_DATA } from '@/constants/categories';
 import { CategoryType, Quest } from '@/types';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { DEFAULT_SHORT_TERM_QUESTS, DEFAULT_LONG_TERM_QUESTS, DEFAULT_DAILY_QUESTS } from '@/constants/quests';
+import { DEFAULT_SHORT_TERM_QUESTS, DEFAULT_LONG_TERM_QUESTS } from '@/constants/quests';
 
 
 export default function QuestsScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { quests } = useQuests();
+  const { quests, getAvailableDailyQuests, getDailyQuestProgress } = useQuests();
   const { enabledCategories } = useUser();
 
   const [selectedCategory, setSelectedCategory] = useState<CategoryType>(enabledCategories[0]);
@@ -48,9 +48,12 @@ export default function QuestsScreen() {
 
   const activeQuestTitles = new Set(quests.filter(q => q.status === 'active').map(q => q.title));
 
-  const availableDailyQuests = DEFAULT_DAILY_QUESTS.filter(quest => 
-    quest.category === selectedCategory && !activeQuestTitles.has(quest.title)
+  const availableDailyQuestsForToday = getAvailableDailyQuests(selectedCategory).filter(
+    quest => !activeQuestTitles.has(quest.title)
   );
+
+  const dailyQuestProgress = getDailyQuestProgress(selectedCategory);
+  const canCompleteMoreDaily = dailyQuestProgress.completed < dailyQuestProgress.limit;
 
   const availableShortTermQuests = DEFAULT_SHORT_TERM_QUESTS.filter(quest => 
     quest.category === selectedCategory && !activeQuestTitles.has(quest.title)
@@ -266,6 +269,15 @@ export default function QuestsScreen() {
             })}
           </ScrollView>
 
+          <View style={styles.dailyProgressContainer}>
+            <Text style={styles.dailyProgressText}>
+              Daily Quests: {dailyQuestProgress.completed}/{dailyQuestProgress.limit} completed
+            </Text>
+            {!canCompleteMoreDaily && (
+              <Text style={styles.dailyLimitText}>Come back tomorrow for more!</Text>
+            )}
+          </View>
+
           {(activeDailyQuests.length > 0 || activeShortTermQuests.length > 0 || activeLongTermQuests.length > 0 || activeCustomQuests.length > 0) && (
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Active Quests</Text>
@@ -300,14 +312,21 @@ export default function QuestsScreen() {
             </View>
           )}
 
-          {(availableDailyQuests.length > 0 || availableShortTermQuests.length > 0 || availableLongTermQuests.length > 0) && (
+          {(availableDailyQuestsForToday.length > 0 || availableShortTermQuests.length > 0 || availableLongTermQuests.length > 0) && (
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Available Quests</Text>
               
-              {availableDailyQuests.length > 0 && (
+              {availableDailyQuestsForToday.length > 0 && (
                 <>
-                  <Text style={styles.subsectionTitle}>Daily</Text>
-                  {availableDailyQuests.map((quest, index) => renderAvailableQuestCard(quest, index))}
+                  <View style={styles.subsectionHeader}>
+                    <Text style={styles.subsectionTitle}>Daily (Today&apos;s Quests)</Text>
+                    {!canCompleteMoreDaily && (
+                      <View style={styles.limitBadge}>
+                        <Text style={styles.limitBadgeText}>LIMIT REACHED</Text>
+                      </View>
+                    )}
+                  </View>
+                  {availableDailyQuestsForToday.map((quest, index) => renderAvailableQuestCard(quest, index))}
                 </>
               )}
               
@@ -408,12 +427,47 @@ const styles = StyleSheet.create({
     color: '#fff',
     marginBottom: 16,
   },
+  subsectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 8,
+    marginBottom: 12,
+  },
   subsectionTitle: {
     fontSize: 16,
     fontWeight: '600' as const,
     color: '#ffffff99',
-    marginTop: 8,
-    marginBottom: 12,
+  },
+  limitBadge: {
+    backgroundColor: '#ff4757',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  limitBadgeText: {
+    fontSize: 10,
+    fontWeight: '700' as const,
+    color: '#fff',
+  },
+  dailyProgressContainer: {
+    backgroundColor: '#ffffff10',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#ffffff20',
+  },
+  dailyProgressText: {
+    fontSize: 14,
+    fontWeight: '600' as const,
+    color: '#fff',
+    marginBottom: 4,
+  },
+  dailyLimitText: {
+    fontSize: 12,
+    color: '#4ECDC4',
+    fontStyle: 'italic' as const,
   },
   questCard: {
     backgroundColor: '#ffffff10',

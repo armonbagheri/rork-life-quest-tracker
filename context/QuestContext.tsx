@@ -3,36 +3,92 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Quest, CategoryType, QuestType, MicroGoal, QuestReflection } from '@/types';
 import { useUser } from './UserContext';
+import { DEFAULT_DAILY_QUESTS } from '@/constants/quests';
 
 const QUESTS_STORAGE_KEY = '@lifequest_quests';
+const DAILY_QUEST_STATE_KEY = '@lifequest_daily_quest_state';
+const DAILY_QUEST_LIMIT = 3;
+
+interface DailyQuestState {
+  date: string;
+  availableQuestsByCategory: Record<CategoryType, string[]>;
+  completedCountByCategory: Record<CategoryType, number>;
+}
 
 export const [QuestProvider, useQuests] = createContextHook(() => {
   const { addXP } = useUser();
   const [quests, setQuests] = useState<Quest[]>([]);
   const [customQuests, setCustomQuests] = useState<Quest[]>([]);
+  const [dailyQuestState, setDailyQuestState] = useState<DailyQuestState | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  const getTodayDate = useCallback(() => {
+    return new Date().toLocaleDateString('en-US', { timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone });
+  }, []);
+
+  const getRandomQuests = useCallback((category: CategoryType, count: number): string[] => {
+    const categoryQuests = DEFAULT_DAILY_QUESTS.filter(q => q.category === category);
+    const shuffled = [...categoryQuests].sort(() => Math.random() - 0.5);
+    return shuffled.slice(0, count).map(q => q.title);
+  }, []);
+
+  const initializeDailyQuestState = useCallback((): DailyQuestState => {
+    const today = getTodayDate();
+    const categories: CategoryType[] = ['health', 'wealth', 'social', 'discipline', 'mental', 'recovery'];
+    
+    const availableQuestsByCategory: Record<CategoryType, string[]> = {} as Record<CategoryType, string[]>;
+    const completedCountByCategory: Record<CategoryType, number> = {} as Record<CategoryType, number>;
+    
+    categories.forEach(category => {
+      availableQuestsByCategory[category] = getRandomQuests(category, DAILY_QUEST_LIMIT);
+      completedCountByCategory[category] = 0;
+    });
+
+    return {
+      date: today,
+      availableQuestsByCategory,
+      completedCountByCategory,
+    };
+  }, [getTodayDate, getRandomQuests]);
 
   useEffect(() => {
     async function loadQuests() {
       try {
-        const stored = await AsyncStorage.getItem(QUESTS_STORAGE_KEY);
-        if (stored) {
-          const questData = JSON.parse(stored);
+        const [storedQuests, storedDailyState] = await Promise.all([
+          AsyncStorage.getItem(QUESTS_STORAGE_KEY),
+          AsyncStorage.getItem(DAILY_QUEST_STATE_KEY),
+        ]);
+
+        if (storedQuests) {
+          const questData = JSON.parse(storedQuests);
           console.log('[QuestContext] Loaded from storage:', {
             quests: questData.quests?.length || 0,
             customQuests: questData.customQuests?.length || 0
           });
-          console.log('[QuestContext] Quest details:', questData.quests?.map((q: Quest) => ({ 
-            id: q.id, 
-            title: q.title, 
-            status: q.status, 
-            type: q.type 
-          })));
           setQuests(questData.quests || []);
           setCustomQuests(questData.customQuests || []);
         } else {
           console.log('[QuestContext] No stored quests found - starting fresh');
         }
+
+        const today = getTodayDate();
+        let dailyState: DailyQuestState;
+
+        if (storedDailyState) {
+          dailyState = JSON.parse(storedDailyState);
+          
+          if (dailyState.date !== today) {
+            console.log('[QuestContext] New day detected - resetting daily quests');
+            dailyState = initializeDailyQuestState();
+            await AsyncStorage.setItem(DAILY_QUEST_STATE_KEY, JSON.stringify(dailyState));
+          }
+        } else {
+          console.log('[QuestContext] No daily quest state found - initializing');
+          dailyState = initializeDailyQuestState();
+          await AsyncStorage.setItem(DAILY_QUEST_STATE_KEY, JSON.stringify(dailyState));
+        }
+
+        setDailyQuestState(dailyState);
       } catch (error) {
         console.error('Failed to load quests:', error);
       } finally {
@@ -40,7 +96,7 @@ export const [QuestProvider, useQuests] = createContextHook(() => {
       }
     }
     loadQuests();
-  }, []);
+  }, [getTodayDate, initializeDailyQuestState]);
 
   const saveQuests = useCallback(async (questList: Quest[], customList: Quest[]) => {
     try {
@@ -96,7 +152,20 @@ export const [QuestProvider, useQuests] = createContextHook(() => {
 
     await saveQuests(updatedQuests, updatedCustomQuests);
     await addXP(quest.category, quest.xpValue);
-  }, [quests, customQuests, saveQuests, addXP]);
+
+    if (quest.type === 'daily' && dailyQuestState) {
+      const updatedState: DailyQuestState = {
+        ...dailyQuestState,
+        completedCountByCategory: {
+          ...dailyQuestState.completedCountByCategory,
+          [quest.category]: (dailyQuestState.completedCountByCategory[quest.category] || 0) + 1,
+        },
+      };
+      setDailyQuestState(updatedState);
+      await AsyncStorage.setItem(DAILY_QUEST_STATE_KEY, JSON.stringify(updatedState));
+      console.log('[QuestContext] Daily quest completed - updated state:', updatedState.completedCountByCategory);
+    }
+  }, [quests, customQuests, saveQuests, addXP, dailyQuestState]);
 
   const addCustomQuest = useCallback(async (
     category: CategoryType,
@@ -131,7 +200,31 @@ export const [QuestProvider, useQuests] = createContextHook(() => {
     console.log('[QuestContext] State after save - quests:', quests.length, 'custom:', updatedCustomQuests.length);
   }, [quests, customQuests, saveQuests]);
 
+  const canActivateDailyQuest = useCallback((category: CategoryType): boolean => {
+    if (!dailyQuestState) return false;
+    const completedCount = dailyQuestState.completedCountByCategory[category] || 0;
+    return completedCount < DAILY_QUEST_LIMIT;
+  }, [dailyQuestState]);
+
+  const isDailyQuestAvailable = useCallback((questTitle: string, category: CategoryType): boolean => {
+    if (!dailyQuestState) return false;
+    const availableQuests = dailyQuestState.availableQuestsByCategory[category] || [];
+    return availableQuests.includes(questTitle);
+  }, [dailyQuestState]);
+
   const activateQuest = useCallback(async (questTemplate: Omit<Quest, 'id' | 'status' | 'startDate'>) => {
+    if (questTemplate.type === 'daily') {
+      if (!canActivateDailyQuest(questTemplate.category)) {
+        console.log('[QuestContext] Cannot activate daily quest - limit reached for category:', questTemplate.category);
+        throw new Error(`You've completed the maximum of ${DAILY_QUEST_LIMIT} daily quests in this category today. Try again tomorrow!`);
+      }
+      
+      if (!isDailyQuestAvailable(questTemplate.title, questTemplate.category)) {
+        console.log('[QuestContext] Cannot activate daily quest - not in today\'s available quests');
+        throw new Error('This quest is not available today. Check back tomorrow for different quests!');
+      }
+    }
+
     const today = new Date().toISOString().split('T')[0];
     const newQuest: Quest = {
       ...questTemplate,
@@ -145,7 +238,7 @@ export const [QuestProvider, useQuests] = createContextHook(() => {
     console.log('[QuestContext] Updated quests count:', updatedQuests.length);
     await saveQuests(updatedQuests, customQuests);
     console.log('[QuestContext] Quest activated and saved');
-  }, [quests, customQuests, saveQuests]);
+  }, [quests, customQuests, saveQuests, canActivateDailyQuest, isDailyQuestAvailable]);
 
   const cancelQuest = useCallback(async (questId: string) => {
     console.log('[QuestContext] Cancelling quest:', questId);
@@ -193,6 +286,24 @@ export const [QuestProvider, useQuests] = createContextHook(() => {
     console.log('[QuestContext] All quests cleared');
   }, [saveQuests]);
 
+  const getAvailableDailyQuests = useCallback((category: CategoryType): typeof DEFAULT_DAILY_QUESTS => {
+    if (!dailyQuestState) return [];
+    
+    const availableTitles = dailyQuestState.availableQuestsByCategory[category] || [];
+    return DEFAULT_DAILY_QUESTS.filter(q => 
+      q.category === category && availableTitles.includes(q.title)
+    );
+  }, [dailyQuestState]);
+
+  const getDailyQuestProgress = useCallback((category: CategoryType) => {
+    if (!dailyQuestState) return { completed: 0, limit: DAILY_QUEST_LIMIT };
+    
+    return {
+      completed: dailyQuestState.completedCountByCategory[category] || 0,
+      limit: DAILY_QUEST_LIMIT,
+    };
+  }, [dailyQuestState]);
+
   return useMemo(() => ({
     quests: allQuests,
     activeQuests,
@@ -205,6 +316,9 @@ export const [QuestProvider, useQuests] = createContextHook(() => {
     activateQuest,
     cancelQuest,
     clearAllQuests,
+    getAvailableDailyQuests,
+    getDailyQuestProgress,
+    canActivateDailyQuest,
   }), [
     allQuests,
     activeQuests,
@@ -217,5 +331,8 @@ export const [QuestProvider, useQuests] = createContextHook(() => {
     activateQuest,
     cancelQuest,
     clearAllQuests,
+    getAvailableDailyQuests,
+    getDailyQuestProgress,
+    canActivateDailyQuest,
   ]);
 });
