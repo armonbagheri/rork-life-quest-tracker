@@ -178,39 +178,7 @@ export default function PostToFeedScreen() {
     );
   }
 
-  if (showCamera) {
-    return (
-      <View style={styles.container}>
-        <CameraView
-          style={styles.camera}
-          ref={(ref: any) => setCameraRef(ref)}
-          facing="back"
-        >
-          <View style={[styles.cameraHeader, { paddingTop: insets.top + 20 }]}>
-            <TouchableOpacity
-              style={styles.cameraCloseButton}
-              onPress={() => {
-                if (Platform.OS !== 'web') {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                }
-                setShowCamera(false);
-              }}
-            >
-              <X size={24} color="#fff" />
-            </TouchableOpacity>
-          </View>
-          <View style={[styles.cameraFooter, { paddingBottom: insets.bottom + 20 }]}>
-            <TouchableOpacity
-              style={styles.captureButton}
-              onPress={handleCapturePhoto}
-            >
-              <View style={styles.captureButtonInner} />
-            </TouchableOpacity>
-          </View>
-        </CameraView>
-      </View>
-    );
-  }
+
 
   const category = quest ? CATEGORY_DATA[quest.category] : categoryParam ? CATEGORY_DATA[categoryParam as keyof typeof CATEGORY_DATA] : CATEGORY_DATA['health'];
 
@@ -295,6 +263,38 @@ export default function PostToFeedScreen() {
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
+      {showCamera && cameraPermission?.granted && (
+        <View style={StyleSheet.absoluteFill}>
+          <CameraView
+            style={styles.camera}
+            ref={(ref: any) => setCameraRef(ref)}
+            facing="back"
+          >
+            <View style={[styles.cameraHeader, { paddingTop: insets.top + 20 }]}>
+              <TouchableOpacity
+                style={styles.cameraCloseButton}
+                onPress={() => {
+                  if (Platform.OS !== 'web') {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  }
+                  setShowCamera(false);
+                }}
+              >
+                <X size={24} color="#fff" />
+              </TouchableOpacity>
+            </View>
+            <View style={[styles.cameraFooter, { paddingBottom: insets.bottom + 20 }]}>
+              <TouchableOpacity
+                style={styles.captureButton}
+                onPress={handleCapturePhoto}
+              >
+                <View style={styles.captureButtonInner} />
+              </TouchableOpacity>
+            </View>
+          </CameraView>
+        </View>
+      )}
+
       <LinearGradient
         colors={['#1a1a2e', '#16213e', '#0f3460']}
         style={styles.background}
