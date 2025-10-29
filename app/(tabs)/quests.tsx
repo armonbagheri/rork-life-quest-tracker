@@ -436,7 +436,7 @@ export default function QuestsScreen() {
               {availableDailyQuestsForToday.length > 0 && (
                 <>
                   <View style={styles.subsectionHeader}>
-                    <Text style={styles.subsectionTitle}>Daily (Today's Quests)</Text>
+                    <Text style={styles.subsectionTitle}>Daily (Today&apos;s Quests)</Text>
                     {!canCompleteMoreDaily && (
                       <View style={styles.limitBadge}>
                         <Text style={styles.limitBadgeText}>LIMIT REACHED</Text>
@@ -555,6 +555,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600' as const,
     color: '#ffffff99',
+    marginTop: 8,
+    marginBottom: 12,
   },
   limitBadge: {
     backgroundColor: '#ff4757',
