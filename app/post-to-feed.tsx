@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -43,7 +43,7 @@ export default function PostToFeedScreen() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [showCamera, setShowCamera] = useState(false);
   const [cameraPermission, requestCameraPermission] = useCameraPermissions();
-  const [cameraRef, setCameraRef] = useState<any>(null);
+  const cameraRef = useRef<any>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handlePickImage = async () => {
@@ -90,16 +90,20 @@ export default function PostToFeedScreen() {
   };
 
   const handleCapturePhoto = async () => {
-    if (!cameraRef) return;
+    if (!cameraRef.current) {
+      console.log('Camera ref not available');
+      return;
+    }
 
     if (Platform.OS !== 'web') {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     }
 
     try {
-      const photo = await cameraRef.takePictureAsync({
+      const photo = await cameraRef.current.takePictureAsync({
         quality: 0.8,
       });
+      console.log('Photo captured:', photo);
       setSelectedImage(photo.uri);
       setShowCamera(false);
     } catch (error) {
@@ -267,7 +271,7 @@ export default function PostToFeedScreen() {
         <View style={StyleSheet.absoluteFill}>
           <CameraView
             style={styles.camera}
-            ref={(ref: any) => setCameraRef(ref)}
+            ref={cameraRef}
             facing="back"
           >
             <View style={[styles.cameraHeader, { paddingTop: insets.top + 20 }]}>
