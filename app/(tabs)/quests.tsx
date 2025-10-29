@@ -395,13 +395,13 @@ export default function QuestsScreen() {
             </View>
           )}
 
-          {selectedCategory === 'hobbies' && hobbies.length > 0 && !selectedHobby && (
+          {selectedCategory === 'hobbies' && hobbies.length > 0 && !selectedHobby ? (
             <View style={styles.selectHobbyPrompt}>
               <Text style={styles.selectHobbyPromptText}>Please select a hobby above to view quests</Text>
             </View>
-          )}
+          ) : null}
 
-          {(activeDailyQuests.length > 0 || activeShortTermQuests.length > 0 || activeLongTermQuests.length > 0 || activeCustomQuests.length > 0) && (
+          {(activeDailyQuests.length > 0 || activeShortTermQuests.length > 0 || activeLongTermQuests.length > 0 || activeCustomQuests.length > 0) ? (
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Active Quests</Text>
               
@@ -433,9 +433,9 @@ export default function QuestsScreen() {
                 </>
               )}
             </View>
-          )}
+          ) : null}
 
-          {(availableDailyQuestsForToday.length > 0 || availableShortTermQuests.length > 0 || availableLongTermQuests.length > 0) && (
+          {(availableDailyQuestsForToday.length > 0 || availableShortTermQuests.length > 0 || availableLongTermQuests.length > 0) ? (
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Available Quests</Text>
               
@@ -467,7 +467,7 @@ export default function QuestsScreen() {
                 </>
               )}
             </View>
-          )}
+          ) : null}
 
           <View style={{ height: 40 }} />
         </ScrollView>
