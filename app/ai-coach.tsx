@@ -12,7 +12,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { X, Sparkles, Lock, Check, Send, AlertCircle, CheckCircle } from 'lucide-react-native';
+import { X, Sparkles, Lock, Check, Send, AlertCircle, CheckCircle, Plus } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAICoach } from '@/context/AICoachContext';
@@ -31,7 +31,7 @@ export default function AICoachScreen() {
     availableLevels,
     upgradeCoach,
   } = useAICoach();
-  const { quests: activeQuests, addCustomQuest, hobbies } = useQuests();
+  const { quests: activeQuests, addCustomQuest, hobbies, addHobby } = useQuests();
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [input, setInput] = useState('');
   const [pendingQuest, setPendingQuest] = useState<{
@@ -43,6 +43,10 @@ export default function AICoachScreen() {
     microGoals?: { title: string; xpValue: number; }[];
     hobbySubcategory?: string;
   } | null>(null);
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<CategoryType>('health');
+  const [selectedHobby, setSelectedHobby] = useState<string | undefined>(undefined);
+  const [newHobbyName, setNewHobbyName] = useState('');
   const scrollViewRef = useRef<ScrollView>(null);
 
   const proposeQuestTool = createRorkTool({
@@ -125,31 +129,63 @@ export default function AICoachScreen() {
     }
   };
 
+  const [questToCreate, setQuestToCreate] = useState<{
+    title: string;
+    description: string;
+    category: CategoryType;
+    type: 'daily' | 'short' | 'long';
+    xpValue: number;
+    microGoals?: { title: string; xpValue: number; }[];
+    hobbySubcategory?: string;
+  } | null>(null);
+
   const handleAcceptQuest = async () => {
     if (!pendingQuest) return;
 
-    const microGoals: MicroGoal[] | undefined = pendingQuest.microGoals?.map((mg, idx) => ({
+    setQuestToCreate(pendingQuest);
+    setSelectedCategory(pendingQuest.category);
+    setSelectedHobby(pendingQuest.hobbySubcategory);
+    setPendingQuest(null);
+    setShowCategoryModal(true);
+  };
+
+  const handleConfirmQuest = async () => {
+    if (!questToCreate) return;
+
+    let finalHobbySubcategory = selectedHobby;
+    if (selectedCategory === 'hobbies' && newHobbyName.trim()) {
+      finalHobbySubcategory = await addHobby(newHobbyName.trim());
+      setNewHobbyName('');
+    }
+
+    const microGoals: MicroGoal[] | undefined = questToCreate.microGoals?.map((mg, idx) => ({
       id: `milestone-${Date.now()}-${idx}`,
       title: mg.title,
       completed: false,
       xpValue: mg.xpValue
     }));
 
-    console.log('[AI Coach] Creating quest:', pendingQuest.title);
+    console.log('[AI Coach] Creating quest:', questToCreate.title);
     
     await addCustomQuest(
-      pendingQuest.category,
-      pendingQuest.title,
-      pendingQuest.description,
-      pendingQuest.type,
-      pendingQuest.xpValue,
+      selectedCategory,
+      questToCreate.title,
+      questToCreate.description,
+      questToCreate.type,
+      questToCreate.xpValue,
       microGoals,
       undefined,
-      pendingQuest.hobbySubcategory
+      selectedCategory === 'hobbies' ? finalHobbySubcategory : undefined
     );
 
     console.log('[AI Coach] Quest created successfully');
-    setPendingQuest(null);
+    const questTitle = questToCreate.title;
+    setQuestToCreate(null);
+    setShowCategoryModal(false);
+    
+    setTimeout(() => {
+      sendMessage(`I've accepted the quest "${questTitle}"! I'm ready to start working on it.`);
+    }, 300);
   };
 
   const handleDeclineQuest = () => {
@@ -380,9 +416,122 @@ export default function AICoachScreen() {
                 style={[styles.questProposalButton, styles.questProposalButtonPrimary]}
                 onPress={handleAcceptQuest}
               >
-                <Text style={styles.questProposalButtonTextPrimary}>Create Quest!</Text>
+                <Text style={styles.questProposalButtonTextPrimary}>Accept Quest</Text>
               </TouchableOpacity>
             </View>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal
+        visible={showCategoryModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowCategoryModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.categoryModal}>
+            <View style={styles.categoryModalHeader}>
+              <Text style={styles.categoryModalTitle}>Select Category</Text>
+              <TouchableOpacity onPress={() => setShowCategoryModal(false)}>
+                <X size={24} color="#000" />
+              </TouchableOpacity>
+            </View>
+            
+            <ScrollView style={styles.categoryModalScroll}>
+              <Text style={styles.categoryModalSubtitle}>Choose which category this quest belongs to:</Text>
+              
+              <View style={styles.categoryGrid}>
+                {(Object.keys(CATEGORY_DATA) as CategoryType[]).map(cat => {
+                  const catData = CATEGORY_DATA[cat];
+                  const isSelected = selectedCategory === cat;
+                  return (
+                    <TouchableOpacity
+                      key={cat}
+                      style={[
+                        styles.categoryCard,
+                        isSelected && [styles.categoryCardSelected, { borderColor: catData.color }],
+                      ]}
+                      onPress={() => {
+                        setSelectedCategory(cat);
+                        if (cat !== 'hobbies') {
+                          setSelectedHobby(undefined);
+                        }
+                      }}
+                    >
+                      <View style={[styles.categoryCardIcon, { backgroundColor: catData.color + '20' }]}>
+                        <Text style={styles.categoryCardIconText}>{catData.icon}</Text>
+                      </View>
+                      <Text style={styles.categoryCardName}>{catData.name}</Text>
+                      {isSelected && (
+                        <View style={[styles.categoryCardCheck, { backgroundColor: catData.color }]}>
+                          <Check size={16} color="#fff" />
+                        </View>
+                      )}
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+
+              {selectedCategory === 'hobbies' && (
+                <View style={styles.hobbySelection}>
+                  <Text style={styles.hobbySelectionTitle}>Select or Create Hobby:</Text>
+                  
+                  {hobbies.map(hobby => (
+                    <TouchableOpacity
+                      key={hobby.id}
+                      style={[
+                        styles.hobbyOption,
+                        selectedHobby === hobby.id && styles.hobbyOptionSelected,
+                      ]}
+                      onPress={() => {
+                        setSelectedHobby(hobby.id);
+                        setNewHobbyName('');
+                      }}
+                    >
+                      <Text style={styles.hobbyOptionText}>{hobby.name}</Text>
+                      {selectedHobby === hobby.id && (
+                        <Check size={20} color="#FF6B9D" />
+                      )}
+                    </TouchableOpacity>
+                  ))}
+
+                  <View style={styles.newHobbyContainer}>
+                    <Text style={styles.newHobbyLabel}>Or create new hobby:</Text>
+                    <View style={styles.newHobbyRow}>
+                      <TextInput
+                        style={styles.newHobbyInput}
+                        value={newHobbyName}
+                        onChangeText={(text) => {
+                          setNewHobbyName(text);
+                          if (text.trim()) {
+                            setSelectedHobby(undefined);
+                          }
+                        }}
+                        placeholder="Enter hobby name"
+                        placeholderTextColor="#999"
+                      />
+                      {newHobbyName.trim() && (
+                        <View style={styles.newHobbyIcon}>
+                          <Plus size={20} color="#FF6B9D" />
+                        </View>
+                      )}
+                    </View>
+                  </View>
+                </View>
+              )}
+            </ScrollView>
+
+            <TouchableOpacity 
+              style={[
+                styles.confirmCategoryButton,
+                (!selectedCategory || (selectedCategory === 'hobbies' && !selectedHobby && !newHobbyName.trim())) && styles.confirmCategoryButtonDisabled,
+              ]}
+              onPress={handleConfirmQuest}
+              disabled={!selectedCategory || (selectedCategory === 'hobbies' && !selectedHobby && !newHobbyName.trim())}
+            >
+              <Text style={styles.confirmCategoryButtonText}>Create Quest!</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </Modal>
@@ -925,5 +1074,151 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '700' as const,
     color: '#000',
+  },
+  categoryModal: {
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    marginHorizontal: 20,
+    maxHeight: '80%',
+    overflow: 'hidden',
+  },
+  categoryModalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  categoryModalTitle: {
+    fontSize: 20,
+    fontWeight: '700' as const,
+    color: '#000',
+  },
+  categoryModalScroll: {
+    padding: 20,
+  },
+  categoryModalSubtitle: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 16,
+  },
+  categoryGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+    marginBottom: 20,
+  },
+  categoryCard: {
+    width: '47%',
+    backgroundColor: '#f9f9f9',
+    borderRadius: 12,
+    padding: 16,
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: 'transparent',
+    position: 'relative',
+  },
+  categoryCardSelected: {
+    backgroundColor: '#fff',
+  },
+  categoryCardIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 8,
+  },
+  categoryCardIconText: {
+    fontSize: 24,
+  },
+  categoryCardName: {
+    fontSize: 14,
+    fontWeight: '600' as const,
+    color: '#333',
+    textAlign: 'center',
+  },
+  categoryCardCheck: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  hobbySelection: {
+    marginTop: 8,
+  },
+  hobbySelectionTitle: {
+    fontSize: 16,
+    fontWeight: '600' as const,
+    color: '#000',
+    marginBottom: 12,
+  },
+  hobbyOption: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#f9f9f9',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 8,
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  hobbyOptionSelected: {
+    backgroundColor: '#FF6B9D10',
+    borderColor: '#FF6B9D',
+  },
+  hobbyOptionText: {
+    fontSize: 14,
+    fontWeight: '600' as const,
+    color: '#333',
+  },
+  newHobbyContainer: {
+    marginTop: 16,
+  },
+  newHobbyLabel: {
+    fontSize: 14,
+    fontWeight: '600' as const,
+    color: '#666',
+    marginBottom: 8,
+  },
+  newHobbyRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    position: 'relative',
+  },
+  newHobbyInput: {
+    flex: 1,
+    backgroundColor: '#f9f9f9',
+    borderRadius: 12,
+    padding: 16,
+    fontSize: 14,
+    color: '#333',
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+  },
+  newHobbyIcon: {
+    position: 'absolute',
+    right: 16,
+  },
+  confirmCategoryButton: {
+    backgroundColor: '#4ECDC4',
+    margin: 20,
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  confirmCategoryButtonDisabled: {
+    opacity: 0.4,
+  },
+  confirmCategoryButtonText: {
+    fontSize: 16,
+    fontWeight: '700' as const,
+    color: '#fff',
   },
 });
