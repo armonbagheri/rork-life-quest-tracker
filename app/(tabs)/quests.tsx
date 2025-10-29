@@ -191,12 +191,12 @@ export default function QuestsScreen() {
     );
   };
 
-  const renderAvailableQuestCard = (quest: Omit<Quest, 'id' | 'status' | 'startDate'>, index: number) => {
+  const renderAvailableQuestCard = (quest: Omit<Quest, 'id' | 'status' | 'startDate'>, key: string) => {
     const category = CATEGORY_DATA[quest.category];
 
     return (
       <TouchableOpacity
-        key={index}
+        key={key}
         style={styles.questCard}
         onPress={() => handleAvailableQuestPress(quest.title)}
         activeOpacity={0.7}
@@ -449,21 +449,21 @@ export default function QuestsScreen() {
                       </View>
                     )}
                   </View>
-                  {availableDailyQuestsForToday.map((quest, index) => renderAvailableQuestCard(quest, index))}
+                  {availableDailyQuestsForToday.map((quest, index) => renderAvailableQuestCard(quest, `daily-${index}-${quest.title}`))}
                 </>
               )}
               
               {availableShortTermQuests.length > 0 && (
                 <>
                   <Text style={styles.subsectionTitle}>Short-Term</Text>
-                  {availableShortTermQuests.map((quest, index) => renderAvailableQuestCard(quest, index))}
+                  {availableShortTermQuests.map((quest, index) => renderAvailableQuestCard(quest, `short-${index}-${quest.title}`))}
                 </>
               )}
               
               {availableLongTermQuests.length > 0 && (
                 <>
                   <Text style={styles.subsectionTitle}>Long-Term</Text>
-                  {availableLongTermQuests.map((quest, index) => renderAvailableQuestCard(quest, index))}
+                  {availableLongTermQuests.map((quest, index) => renderAvailableQuestCard(quest, `long-${index}-${quest.title}`))}
                 </>
               )}
             </View>
