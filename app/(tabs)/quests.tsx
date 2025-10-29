@@ -395,6 +395,12 @@ export default function QuestsScreen() {
             </View>
           )}
 
+          {selectedCategory === 'hobbies' && hobbies.length > 0 && !selectedHobby && (
+            <View style={styles.selectHobbyPrompt}>
+              <Text style={styles.selectHobbyPromptText}>Please select a hobby above to view quests</Text>
+            </View>
+          )}
+
           {(activeDailyQuests.length > 0 || activeShortTermQuests.length > 0 || activeLongTermQuests.length > 0 || activeCustomQuests.length > 0) && (
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Active Quests</Text>
@@ -754,5 +760,20 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600' as const,
     color: '#ffffff99',
+  },
+  selectHobbyPrompt: {
+    backgroundColor: '#ffffff10',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#ffffff20',
+    alignItems: 'center',
+  },
+  selectHobbyPromptText: {
+    fontSize: 14,
+    fontWeight: '600' as const,
+    color: '#ffffff99',
+    textAlign: 'center',
   },
 });
