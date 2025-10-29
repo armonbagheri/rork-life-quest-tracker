@@ -377,7 +377,7 @@ export default function RecoveryTrackerScreen() {
               <Text style={styles.inputLabel}>What do you want to quit?</Text>
               <TextInput
                 style={styles.input}
-                placeholder="e.g., Alcohol, Smoking, Porn"
+                placeholder="e.g., Alcohol, Smoking, etc."
                 placeholderTextColor="#ffffff60"
                 value={newItemName}
                 onChangeText={setNewItemName}
