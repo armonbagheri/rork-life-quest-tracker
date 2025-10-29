@@ -401,7 +401,7 @@ export default function QuestsScreen() {
             </View>
           )}
 
-          {(activeDailyQuests.length > 0 || activeShortTermQuests.length > 0 || activeLongTermQuests.length > 0 || activeCustomQuests.length > 0) && (
+          {(selectedCategory !== 'hobbies' || selectedHobby) && (activeDailyQuests.length > 0 || activeShortTermQuests.length > 0 || activeLongTermQuests.length > 0 || activeCustomQuests.length > 0) && (
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Active Quests</Text>
               
@@ -435,7 +435,7 @@ export default function QuestsScreen() {
             </View>
           )}
 
-          {(availableDailyQuestsForToday.length > 0 || availableShortTermQuests.length > 0 || availableLongTermQuests.length > 0) && (
+          {(selectedCategory !== 'hobbies' || selectedHobby) && (availableDailyQuestsForToday.length > 0 || availableShortTermQuests.length > 0 || availableLongTermQuests.length > 0) && (
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Available Quests</Text>
               
