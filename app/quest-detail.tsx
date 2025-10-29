@@ -7,7 +7,6 @@ import {
   TouchableOpacity,
   Platform,
   Modal,
-  Alert,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -32,6 +31,7 @@ export default function QuestDetailScreen() {
   const [isCompleting, setIsCompleting] = useState(false);
   const [showCancelButton, setShowCancelButton] = useState(false);
   const [pendingMilestone, setPendingMilestone] = useState<{ id: string; title: string } | null>(null);
+  const [errorAlert, setErrorAlert] = useState<{ title: string; message: string } | null>(null);
 
   const quest = useMemo(() => {
     if (questId) {
@@ -107,7 +107,7 @@ export default function QuestDetailScreen() {
       }
       const errorMessage = error instanceof Error ? error.message : 'Failed to start quest';
       console.log('[QuestDetail] Error starting quest:', errorMessage);
-      Alert.alert('Cannot Start Quest', errorMessage, [{ text: 'OK' }]);
+      setErrorAlert({ title: 'Cannot Start Quest', message: errorMessage });
     }
   };
 
@@ -439,6 +439,37 @@ export default function QuestDetailScreen() {
                 <Text style={styles.confirmModalButtonConfirmText}>Yes, Complete</Text>
               </TouchableOpacity>
             </View>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal
+        visible={!!errorAlert}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setErrorAlert(null)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.confirmModal}>
+            <View style={[styles.confirmModalHeader, { backgroundColor: '#ff475720', borderRadius: 50 }]}>
+              <XCircle size={32} color="#ff4757" />
+            </View>
+            <Text style={styles.confirmModalTitle}>{errorAlert?.title}</Text>
+            <Text style={styles.confirmModalMessage}>
+              {errorAlert?.message}
+            </Text>
+            <TouchableOpacity
+              style={[styles.confirmModalButtonConfirm, { width: '100%' }]}
+              onPress={() => {
+                if (Platform.OS !== 'web') {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                }
+                setErrorAlert(null);
+              }}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.confirmModalButtonConfirmText}>OK</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </Modal>
