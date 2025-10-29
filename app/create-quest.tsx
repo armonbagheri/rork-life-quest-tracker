@@ -188,7 +188,7 @@ export default function CreateQuestScreen() {
             <View style={styles.hobbyInfo}>
               <Text style={styles.hobbyInfoLabel}>Hobby:</Text>
               <Text style={styles.hobbyInfoValue}>
-                {hobbies.find(h => h.id === hobbySubcategory)?.name}
+                {hobbies.find(h => h.id === hobbySubcategory)?.name || 'Unknown Hobby'}
               </Text>
             </View>
           )}
