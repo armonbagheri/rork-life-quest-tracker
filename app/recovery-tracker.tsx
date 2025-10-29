@@ -267,6 +267,7 @@ export default function RecoveryTrackerScreen() {
             fontWeight: '600',
           },
           headerBackTitle: 'Back',
+          headerShown: true,
         }}
       />
       <View style={styles.container}>
@@ -474,7 +475,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: 20,
-    paddingTop: 20,
+    paddingTop: 24,
   },
   header: {
     flexDirection: 'row',
