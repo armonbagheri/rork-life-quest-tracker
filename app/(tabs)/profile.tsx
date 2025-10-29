@@ -177,6 +177,26 @@ export default function ProfileScreen() {
                 </Text>
               </View>
             </TouchableOpacity>
+
+            {enabledCategories.includes('recovery') && (
+              <TouchableOpacity
+                style={styles.actionCard}
+                onPress={() => {
+                  if (Platform.OS !== 'web') {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  }
+                  router.push('/recovery-tracker');
+                }}
+              >
+                <Shield size={24} color="#1ABC9C" />
+                <View style={styles.actionCardContent}>
+                  <Text style={styles.actionCardTitle}>Recovery Tracker</Text>
+                  <Text style={styles.actionCardSubtitle}>
+                    Track your journey to freedom
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            )}
           </View>
 
           <View style={styles.section}>

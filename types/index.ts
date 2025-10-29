@@ -209,3 +209,22 @@ export interface HobbySubcategory {
   description?: string;
   createdAt: string;
 }
+
+export interface RecoveryLog {
+  id: string;
+  timestamp: string;
+  type: 'success' | 'relapse';
+  note?: string;
+}
+
+export interface RecoveryItem {
+  id: string;
+  name: string;
+  description?: string;
+  startDate: string;
+  logs: RecoveryLog[];
+  currentStreak: number;
+  longestStreak: number;
+  totalDays: number;
+  relapseCount: number;
+}

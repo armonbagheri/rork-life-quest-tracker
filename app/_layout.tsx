@@ -7,6 +7,7 @@ import { UserProvider, useUser } from "@/context/UserContext";
 import { QuestProvider } from "@/context/QuestContext";
 import { ActivityProvider } from "@/context/ActivityContext";
 import { AICoachProvider } from "@/context/AICoachContext";
+import { RecoveryProvider } from "@/context/RecoveryContext";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -41,6 +42,7 @@ function RootLayoutNav() {
       <Stack.Screen name="ai-coach" options={{ headerShown: false, presentation: 'modal' }} />
       <Stack.Screen name="community-challenges" options={{ headerShown: false, presentation: 'modal' }} />
       <Stack.Screen name="joint-quests" options={{ headerShown: false, presentation: 'modal' }} />
+      <Stack.Screen name="recovery-tracker" options={{ headerShown: false, presentation: 'modal' }} />
     </Stack>
   );
 }
@@ -57,7 +59,9 @@ export default function RootLayout() {
           <QuestProvider>
             <ActivityProvider>
               <AICoachProvider>
-                <RootLayoutNav />
+                <RecoveryProvider>
+                  <RootLayoutNav />
+                </RecoveryProvider>
               </AICoachProvider>
             </ActivityProvider>
           </QuestProvider>

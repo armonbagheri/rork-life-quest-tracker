@@ -17,6 +17,7 @@ import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAICoach } from '@/context/AICoachContext';
 import { useQuests } from '@/context/QuestContext';
+import { useRecovery } from '@/context/RecoveryContext';
 import { CATEGORY_DATA } from '@/constants/categories';
 import { CategoryType, MicroGoal } from '@/types';
 import { createRorkTool, useRorkAgent } from '@rork/toolkit-sdk';
@@ -32,6 +33,7 @@ export default function AICoachScreen() {
     upgradeCoach,
   } = useAICoach();
   const { quests: activeQuests, addCustomQuest, hobbies, addHobby } = useQuests();
+  const { recoveryItems } = useRecovery();
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [input, setInput] = useState('');
   const [pendingQuest, setPendingQuest] = useState<{
@@ -96,10 +98,42 @@ export default function AICoachScreen() {
     }
   });
 
+  const getRecoveryInfoTool = createRorkTool({
+    description: "Get information about the user's recovery tracking items. Use this when user asks about their recovery progress, sobriety, or wants help with addiction recovery.",
+    zodSchema: z.object({
+      itemName: z.string().optional().describe("Optional name of specific recovery item to get info about")
+    }),
+    execute: async (input) => {
+      if (recoveryItems.length === 0) {
+        return "User is not tracking any recovery items yet. You can suggest they visit the Recovery Tracker to start tracking their journey.";
+      }
+
+      const items = input.itemName
+        ? recoveryItems.filter(item => item.name.toLowerCase().includes(input.itemName!.toLowerCase()))
+        : recoveryItems;
+
+      if (items.length === 0) {
+        return `No recovery items found matching '${input.itemName}'.`;
+      }
+
+      const itemsInfo = items.map(item => {
+        const recentLogs = item.logs
+          .slice()
+          .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+          .slice(0, 3);
+
+        return `- ${item.name}: Current streak: ${item.currentStreak} days, Longest streak: ${item.longestStreak} days, Total days: ${item.totalDays}, Relapses: ${item.relapseCount}${recentLogs.length > 0 ? `, Recent activity: ${recentLogs.map(log => `${log.type} on ${new Date(log.timestamp).toLocaleDateString()}`).join(', ')}` : ''}`;
+      }).join('\n');
+
+      return `Recovery Progress:\n${itemsInfo}\n\nProvide encouragement, support, and practical strategies to help them continue their journey.`;
+    }
+  });
+
   const { messages, error, sendMessage } = useRorkAgent({
     tools: {
       proposeQuest: proposeQuestTool,
       findQuestHelp: findQuestHelpTool,
+      getRecoveryInfo: getRecoveryInfoTool,
     }
   });
 
@@ -279,6 +313,14 @@ export default function AICoachScreen() {
                     onPress={() => setInput(`I want to improve in ${hobbies[0].name}. Can you help me create a training plan?`)}
                   >
                     <Text style={styles.exampleQuestionText}>⭐ Improve in {hobbies[0].name}</Text>
+                  </TouchableOpacity>
+                )}
+                {recoveryItems.length > 0 && (
+                  <TouchableOpacity 
+                    style={styles.exampleQuestion}
+                    onPress={() => setInput("How is my recovery progress? I need some encouragement and tips to stay strong.")}
+                  >
+                    <Text style={styles.exampleQuestionText}>🛡️ Recovery support</Text>
                   </TouchableOpacity>
                 )}
                 <TouchableOpacity 
