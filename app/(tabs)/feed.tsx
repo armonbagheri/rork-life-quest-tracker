@@ -102,7 +102,8 @@ export default function FeedScreen() {
               {getCategoryIcon(activity.category, 16)}
             </View>
             <Text style={styles.activityText}>
-              completed <Text style={styles.questTitle}>{activity.questTitle}</Text>
+              {activity.type === 'milestone_completed' ? 'completed milestone' : 'completed'}{' '}
+              <Text style={styles.questTitle}>{activity.questTitle}</Text>
             </Text>
           </View>
           
@@ -110,6 +111,10 @@ export default function FeedScreen() {
             <Zap size={16} color="#FFD700" fill="#FFD700" />
             <Text style={styles.xpText}>+{activity.xpEarned} XP</Text>
           </View>
+
+          {activity.caption && (
+            <Text style={styles.captionText}>{activity.caption}</Text>
+          )}
         </View>
 
         {activity.media && (
@@ -557,6 +562,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600' as const,
     color: '#FFD700',
+  },
+  captionText: {
+    fontSize: 14,
+    color: '#fff',
+    marginTop: 12,
+    lineHeight: 20,
   },
   mediaContainer: {
     marginBottom: 12,

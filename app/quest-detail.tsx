@@ -152,8 +152,22 @@ export default function QuestDetailScreen() {
     if (Platform.OS !== 'web') {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     }
+    
+    const milestone = quest.microGoals?.find(m => m.id === pendingMilestone.id);
+    if (!milestone) return;
+    
     await completeMilestone(questId!, pendingMilestone.id);
     setPendingMilestone(null);
+    
+    router.push({
+      pathname: '/post-to-feed' as any,
+      params: {
+        milestoneId: pendingMilestone.id,
+        milestoneName: pendingMilestone.title,
+        xpValue: milestone.xpValue.toString(),
+        category: quest.category,
+      },
+    });
   };
 
   const handleCancelMilestone = () => {

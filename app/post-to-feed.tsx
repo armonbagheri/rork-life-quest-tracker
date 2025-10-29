@@ -29,8 +29,14 @@ export default function PostToFeedScreen() {
   const { addActivity } = useActivities();
   const { quests } = useQuests();
 
-  const questId = params.questId as string;
-  const quest = quests.find(q => q.id === questId);
+  const questId = params.questId as string | undefined;
+  const milestoneId = params.milestoneId as string | undefined;
+  const milestoneName = params.milestoneName as string | undefined;
+  const xpValue = params.xpValue ? parseInt(params.xpValue as string) : undefined;
+  const categoryParam = params.category as string | undefined;
+  
+  const quest = questId ? quests.find(q => q.id === questId) : undefined;
+  const isMilestone = !!milestoneId;
 
   const [wantsToPost, setWantsToPost] = useState<boolean | null>(null);
   const [caption, setCaption] = useState('');
@@ -110,22 +116,36 @@ export default function PostToFeedScreen() {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     }
 
-    if (quest) {
+    if (isMilestone && milestoneName && xpValue && categoryParam) {
+      await addActivity(
+        milestoneName,
+        categoryParam,
+        xpValue,
+        'milestone_completed',
+        selectedImage ? { type: 'image', uri: selectedImage } : undefined,
+        caption.trim() || undefined
+      );
+      
+      setTimeout(() => {
+        router.back();
+      }, 300);
+    } else if (quest) {
       await addActivity(
         quest.title,
         quest.category,
         quest.xpValue,
         'quest_completed',
-        selectedImage ? { type: 'image', uri: selectedImage } : undefined
+        selectedImage ? { type: 'image', uri: selectedImage } : undefined,
+        caption.trim() || undefined
       );
+      
+      setTimeout(() => {
+        router.push({
+          pathname: '/post-quest-reflection',
+          params: { questId },
+        });
+      }, 300);
     }
-
-    setTimeout(() => {
-      router.push({
-        pathname: '/post-quest-reflection',
-        params: { questId },
-      });
-    }, 300);
   };
 
   const handleSkipPosting = () => {
@@ -133,13 +153,17 @@ export default function PostToFeedScreen() {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
 
-    router.push({
-      pathname: '/post-quest-reflection',
-      params: { questId },
-    });
+    if (isMilestone) {
+      router.back();
+    } else {
+      router.push({
+        pathname: '/post-quest-reflection',
+        params: { questId },
+      });
+    }
   };
 
-  if (!quest) {
+  if (!quest && !isMilestone) {
     return (
       <View style={styles.container}>
         <LinearGradient
@@ -188,7 +212,7 @@ export default function PostToFeedScreen() {
     );
   }
 
-  const category = CATEGORY_DATA[quest.category];
+  const category = quest ? CATEGORY_DATA[quest.category] : categoryParam ? CATEGORY_DATA[categoryParam as keyof typeof CATEGORY_DATA] : CATEGORY_DATA['health'];
 
   if (wantsToPost === null) {
     return (
@@ -207,7 +231,9 @@ export default function PostToFeedScreen() {
             ]}
           >
             <View style={styles.questionContainer}>
-              <Text style={styles.questionTitle}>Quest Complete! 🎉</Text>
+              <Text style={styles.questionTitle}>
+                {isMilestone ? 'Milestone Complete! 🎉' : 'Quest Complete! 🎉'}
+              </Text>
               <Text style={styles.questionSubtitle}>
                 Share your achievement with the community?
               </Text>
@@ -223,10 +249,12 @@ export default function PostToFeedScreen() {
                     {category.name}
                   </Text>
                 </View>
-                <Text style={styles.questTitle}>{quest.title}</Text>
+                <Text style={styles.questTitle}>
+                  {isMilestone ? milestoneName : quest?.title}
+                </Text>
                 <View style={styles.xpBadge}>
                   <Zap size={16} color="#FFD700" fill="#FFD700" />
-                  <Text style={styles.xpText}>+{quest.xpValue} XP</Text>
+                  <Text style={styles.xpText}>+{isMilestone ? xpValue : quest?.xpValue} XP</Text>
                 </View>
               </View>
 

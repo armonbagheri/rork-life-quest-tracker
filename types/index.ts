@@ -138,6 +138,7 @@ export interface Activity {
   category: CategoryType;
   xpEarned: number;
   media?: ActivityMedia;
+  caption?: string;
   timestamp: string;
   likes?: string[];
   comments?: Comment[];

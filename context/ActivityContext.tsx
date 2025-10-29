@@ -124,7 +124,8 @@ export const [ActivityProvider, useActivities] = createContextHook(() => {
     category: string,
     xpEarned: number,
     type: 'quest_completed' | 'milestone_completed',
-    media?: ActivityMedia
+    media?: ActivityMedia,
+    caption?: string
   ) => {
     const newActivity: Activity = {
       id: `activity-${Date.now()}-${Math.random()}`,
@@ -136,6 +137,7 @@ export const [ActivityProvider, useActivities] = createContextHook(() => {
       category: category as any,
       xpEarned,
       media,
+      caption,
       timestamp: new Date().toISOString(),
       likes: [],
       comments: [],
