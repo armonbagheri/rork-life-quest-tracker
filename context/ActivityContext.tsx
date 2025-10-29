@@ -270,8 +270,7 @@ export const [ActivityProvider, useActivities] = createContextHook(() => {
 
   const friendsActivities = useMemo(() => {
     return activities.filter(activity => 
-      user.friends.includes(activity.userId) && 
-      activity.userId !== user.id
+      user.friends.includes(activity.userId) || activity.userId === user.id
     );
   }, [activities, user]);
 
