@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Platform,
   Modal,
+  Alert,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -94,11 +95,19 @@ export default function QuestDetailScreen() {
   };
 
   const handleStartQuest = async () => {
-    if (Platform.OS !== 'web') {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    try {
+      if (Platform.OS !== 'web') {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      }
+      await activateQuest(quest as Omit<Quest, 'id' | 'status' | 'startDate'>);
+      router.back();
+    } catch (error) {
+      if (Platform.OS !== 'web') {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+      }
+      const errorMessage = error instanceof Error ? error.message : 'Failed to start quest';
+      Alert.alert('Cannot Start Quest', errorMessage, [{ text: 'OK' }]);
     }
-    await activateQuest(quest as Omit<Quest, 'id' | 'status' | 'startDate'>);
-    router.back();
   };
 
   const handleCompleteQuest = () => {

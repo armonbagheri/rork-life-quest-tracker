@@ -6,6 +6,8 @@ import {
   ScrollView,
   TouchableOpacity,
   Modal,
+  Alert,
+  Platform,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { X, Users, Trophy, Calendar, Heart, DollarSign, Target, Brain, Shield, Eye, EyeOff, Check } from 'lucide-react-native';
@@ -36,21 +38,31 @@ export default function CommunityChallengesScreen() {
   const handleConfirmJoin = async () => {
     if (!selectedChallenge) return;
 
-    await activateQuest({
-      type: 'long',
-      category: selectedChallenge.category,
-      title: selectedChallenge.title,
-      description: selectedChallenge.description,
-      xpValue: selectedChallenge.xpValue,
-      endDate: selectedChallenge.endDate,
-      microGoals: selectedChallenge.microGoals?.map(mg => ({ ...mg, completed: false })),
-      isCommunityChallenge: true,
-      participants: [privacySetting],
-    });
+    try {
+      await activateQuest({
+        type: 'long',
+        category: selectedChallenge.category,
+        title: selectedChallenge.title,
+        description: selectedChallenge.description,
+        xpValue: selectedChallenge.xpValue,
+        endDate: selectedChallenge.endDate,
+        microGoals: selectedChallenge.microGoals?.map(mg => ({ ...mg, completed: false })),
+        isCommunityChallenge: true,
+        participants: [privacySetting],
+      });
 
-    setShowPrivacyModal(false);
-    setSelectedChallenge(null);
-    router.back();
+      setShowPrivacyModal(false);
+      setSelectedChallenge(null);
+      router.back();
+    } catch (error) {
+      setShowPrivacyModal(false);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to join challenge';
+      if (Platform.OS === 'web') {
+        alert(errorMessage);
+      } else {
+        Alert.alert('Cannot Join Challenge', errorMessage, [{ text: 'OK' }]);
+      }
+    }
   };
 
   const getCategoryIcon = (category: CategoryType) => {
