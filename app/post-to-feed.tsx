@@ -38,11 +38,11 @@ export default function PostToFeedScreen() {
   const quest = questId ? quests.find(q => q.id === questId) : undefined;
   const isMilestone = !!milestoneId;
 
+  const [cameraPermission, requestCameraPermission] = useCameraPermissions();
   const [wantsToPost, setWantsToPost] = useState<boolean | null>(null);
   const [caption, setCaption] = useState('');
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [showCamera, setShowCamera] = useState(false);
-  const [cameraPermission, requestCameraPermission] = useCameraPermissions();
   const cameraRef = useRef<any>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
