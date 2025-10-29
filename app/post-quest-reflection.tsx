@@ -47,33 +47,39 @@ export default function PostQuestReflectionScreen() {
       timestamp: new Date().toISOString(),
     });
 
+    setIsSubmitting(false);
+
+    if (router.canGoBack()) {
+      router.back();
+    }
     setTimeout(() => {
       if (router.canGoBack()) {
         router.back();
-        setTimeout(() => {
-          if (router.canGoBack()) {
-            router.back();
-          }
-        }, 100);
       }
-    }, 300);
+    }, 100);
   };
 
   const handleSkip = async () => {
+    if (isSubmitting) return;
+    
     if (Platform.OS !== 'web') {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
 
+    setIsSubmitting(true);
+
     await completeQuest(questId);
     
+    setIsSubmitting(false);
+
     if (router.canGoBack()) {
       router.back();
-      setTimeout(() => {
-        if (router.canGoBack()) {
-          router.back();
-        }
-      }, 100);
     }
+    setTimeout(() => {
+      if (router.canGoBack()) {
+        router.back();
+      }
+    }, 100);
   };
 
   const renderStars = (
