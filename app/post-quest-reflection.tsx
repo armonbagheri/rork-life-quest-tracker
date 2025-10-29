@@ -49,14 +49,7 @@ export default function PostQuestReflectionScreen() {
 
     setIsSubmitting(false);
 
-    if (router.canGoBack()) {
-      router.back();
-    }
-    setTimeout(() => {
-      if (router.canGoBack()) {
-        router.back();
-      }
-    }, 100);
+    router.dismissAll();
   };
 
   const handleSkip = async () => {
@@ -72,14 +65,7 @@ export default function PostQuestReflectionScreen() {
     
     setIsSubmitting(false);
 
-    if (router.canGoBack()) {
-      router.back();
-    }
-    setTimeout(() => {
-      if (router.canGoBack()) {
-        router.back();
-      }
-    }, 100);
+    router.dismissAll();
   };
 
   const renderStars = (
