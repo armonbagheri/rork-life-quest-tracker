@@ -12,7 +12,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { X, Sparkles, Lock, Check, Send, AlertCircle, CheckCircle, Plus } from 'lucide-react-native';
+import { X, Sparkles, Lock, Check, Send, AlertCircle, CheckCircle, Plus, Heart, DollarSign, Users, Target, Brain, Shield, Star } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAICoach } from '@/context/AICoachContext';
@@ -199,6 +199,27 @@ export default function AICoachScreen() {
     }, 300);
   };
 
+  const getCategoryIcon = (category: CategoryType) => {
+    switch (category) {
+      case 'health':
+        return Heart;
+      case 'wealth':
+        return DollarSign;
+      case 'social':
+        return Users;
+      case 'discipline':
+        return Target;
+      case 'mental':
+        return Brain;
+      case 'recovery':
+        return Shield;
+      case 'hobbies':
+        return Star;
+      default:
+        return Star;
+    }
+  };
+
   return (
     <KeyboardAvoidingView 
       style={styles.container}
@@ -369,39 +390,70 @@ export default function AICoachScreen() {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.questProposalModal}>
-            <View style={styles.questProposalHeader}>
-              <Sparkles size={24} color="#FFD700" />
-              <Text style={styles.questProposalTitle}>Quest Proposal</Text>
-            </View>
+            <LinearGradient
+              colors={['#1a1a2e', '#16213e']}
+              style={styles.questProposalHeader}
+            >
+              <View style={styles.questProposalHeaderIcon}>
+                <Sparkles size={28} color="#FFD700" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.questProposalTitle}>Quest Proposal</Text>
+                <Text style={styles.questProposalSubtitle}>Review your personalized quest</Text>
+              </View>
+            </LinearGradient>
             
             {pendingQuest && (
-              <ScrollView style={styles.questProposalScroll}>
-                <Text style={styles.questProposalQuestTitle}>{pendingQuest.title}</Text>
-                <View style={styles.questProposalMeta}>
-                  <View style={[styles.questProposalBadge, { backgroundColor: CATEGORY_DATA[pendingQuest.category].color }]}>
-                    <Text style={styles.questProposalBadgeText}>{CATEGORY_DATA[pendingQuest.category].name}</Text>
+              <ScrollView style={styles.questProposalScroll} showsVerticalScrollIndicator={false}>
+                <View style={styles.questProposalContent}>
+                  <View style={[styles.questCategoryIndicator, { backgroundColor: CATEGORY_DATA[pendingQuest.category].color + '15', borderLeftColor: CATEGORY_DATA[pendingQuest.category].color }]}>
+                    <View style={[styles.questCategoryIconBox, { backgroundColor: CATEGORY_DATA[pendingQuest.category].color + '25' }]}>
+                      {(() => {
+                        const IconComponent = getCategoryIcon(pendingQuest.category);
+                        return <IconComponent size={24} color={CATEGORY_DATA[pendingQuest.category].color} />;
+                      })()}
+                    </View>
+                    <Text style={[styles.questCategoryName, { color: CATEGORY_DATA[pendingQuest.category].color }]}>
+                      {CATEGORY_DATA[pendingQuest.category].name}
+                    </Text>
                   </View>
-                  <View style={styles.questProposalBadge}>
-                    <Text style={styles.questProposalBadgeText}>{pendingQuest.xpValue} XP</Text>
+
+                  <Text style={styles.questProposalQuestTitle}>{pendingQuest.title}</Text>
+                  
+                  <View style={styles.questProposalMeta}>
+                    <View style={styles.questProposalMetaBadge}>
+                      <Sparkles size={14} color="#FFD700" />
+                      <Text style={styles.questProposalMetaBadgeText}>{pendingQuest.xpValue} XP</Text>
+                    </View>
+                    <View style={styles.questProposalMetaBadge}>
+                      <Text style={styles.questProposalTypeText}>{pendingQuest.type.toUpperCase()}</Text>
+                    </View>
                   </View>
-                  <View style={styles.questProposalBadge}>
-                    <Text style={styles.questProposalBadgeText}>{pendingQuest.type}</Text>
-                  </View>
-                </View>
-                <Text style={styles.questProposalDescription}>{pendingQuest.description}</Text>
-                
-                {pendingQuest.microGoals && pendingQuest.microGoals.length > 0 && (
-                  <View style={styles.questProposalMilestones}>
-                    <Text style={styles.questProposalMilestonesTitle}>Milestones:</Text>
-                    {pendingQuest.microGoals.map((mg, idx) => (
-                      <View key={idx} style={styles.questProposalMilestone}>
-                        <CheckCircle size={16} color="#4ECDC4" />
-                        <Text style={styles.questProposalMilestoneText}>{mg.title}</Text>
-                        <Text style={styles.questProposalMilestoneXP}>{mg.xpValue} XP</Text>
+                  
+                  <Text style={styles.questProposalDescription}>{pendingQuest.description}</Text>
+                  
+                  {pendingQuest.microGoals && pendingQuest.microGoals.length > 0 && (
+                    <View style={styles.questProposalMilestones}>
+                      <View style={styles.milestonesHeader}>
+                        <CheckCircle size={20} color="#4ECDC4" />
+                        <Text style={styles.questProposalMilestonesTitle}>Milestones</Text>
                       </View>
-                    ))}
-                  </View>
-                )}
+                      {pendingQuest.microGoals.map((mg, idx) => (
+                        <View key={idx} style={styles.questProposalMilestone}>
+                          <View style={styles.milestoneNumber}>
+                            <Text style={styles.milestoneNumberText}>{idx + 1}</Text>
+                          </View>
+                          <View style={styles.milestoneContent}>
+                            <Text style={styles.questProposalMilestoneText}>{mg.title}</Text>
+                            <View style={styles.milestoneXPBadge}>
+                              <Text style={styles.questProposalMilestoneXP}>+{mg.xpValue} XP</Text>
+                            </View>
+                          </View>
+                        </View>
+                      ))}
+                    </View>
+                  )}
+                </View>
               </ScrollView>
             )}
 
@@ -410,12 +462,13 @@ export default function AICoachScreen() {
                 style={[styles.questProposalButton, styles.questProposalButtonSecondary]}
                 onPress={handleDeclineQuest}
               >
-                <Text style={styles.questProposalButtonTextSecondary}>Revise Plan</Text>
+                <Text style={styles.questProposalButtonTextSecondary}>✏️ Revise Plan</Text>
               </TouchableOpacity>
               <TouchableOpacity 
                 style={[styles.questProposalButton, styles.questProposalButtonPrimary]}
                 onPress={handleAcceptQuest}
               >
+                <Check size={18} color="#fff" style={{ marginRight: 4 }} />
                 <Text style={styles.questProposalButtonTextPrimary}>Accept Quest</Text>
               </TouchableOpacity>
             </View>
@@ -445,6 +498,7 @@ export default function AICoachScreen() {
                 {(Object.keys(CATEGORY_DATA) as CategoryType[]).map(cat => {
                   const catData = CATEGORY_DATA[cat];
                   const isSelected = selectedCategory === cat;
+                  const IconComponent = getCategoryIcon(cat);
                   return (
                     <TouchableOpacity
                       key={cat}
@@ -460,7 +514,7 @@ export default function AICoachScreen() {
                       }}
                     >
                       <View style={[styles.categoryCardIcon, { backgroundColor: catData.color + '20' }]}>
-                        <Text style={styles.categoryCardIconText}>{catData.icon}</Text>
+                        <IconComponent size={32} color={catData.color} />
                       </View>
                       <Text style={styles.categoryCardName}>{catData.name}</Text>
                       {isSelected && (
@@ -897,46 +951,106 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   questProposalModal: {
-    backgroundColor: '#fff',
-    borderRadius: 24,
+    backgroundColor: '#ffffff',
+    borderRadius: 28,
     marginHorizontal: 20,
     maxHeight: '85%',
     overflow: 'hidden',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.3,
-    shadowRadius: 20,
-    elevation: 10,
+    shadowOffset: { width: 0, height: 20 },
+    shadowOpacity: 0.4,
+    shadowRadius: 30,
+    elevation: 15,
   },
   questProposalHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: 16,
     padding: 24,
-    backgroundColor: '#fafafa',
+    paddingBottom: 20,
+  },
+  questProposalHeaderIcon: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#FFD70020',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: '#FFD70040',
   },
   questProposalTitle: {
-    fontSize: 18,
-    fontWeight: '600' as const,
-    color: '#666',
-    letterSpacing: 0.5,
-    textTransform: 'uppercase' as const,
+    fontSize: 20,
+    fontWeight: '800' as const,
+    color: '#fff',
+    letterSpacing: 0.3,
+  },
+  questProposalSubtitle: {
+    fontSize: 13,
+    color: '#ffffff99',
+    marginTop: 2,
   },
   questProposalScroll: {
+    maxHeight: 500,
+  },
+  questProposalContent: {
     padding: 24,
   },
+  questCategoryIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 16,
+    marginBottom: 20,
+    borderLeftWidth: 4,
+  },
+  questCategoryIconBox: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  questCategoryName: {
+    fontSize: 15,
+    fontWeight: '700' as const,
+  },
   questProposalQuestTitle: {
-    fontSize: 28,
+    fontSize: 26,
     fontWeight: '800' as const,
     color: '#1a1a1a',
     marginBottom: 16,
-    lineHeight: 34,
+    lineHeight: 32,
   },
   questProposalMeta: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 10,
+    gap: 8,
     marginBottom: 20,
+  },
+  questProposalMetaBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#f8f9fa',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e8eaed',
+  },
+  questProposalMetaBadgeText: {
+    fontSize: 13,
+    fontWeight: '700' as const,
+    color: '#333',
+  },
+  questProposalTypeText: {
+    fontSize: 12,
+    fontWeight: '700' as const,
+    color: '#666',
+    letterSpacing: 0.5,
   },
   questProposalBadge: {
     backgroundColor: '#f0f0f0',
@@ -961,33 +1075,57 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   questProposalMilestones: {
-    gap: 12,
     marginTop: 8,
+  },
+  milestonesHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 16,
   },
   questProposalMilestonesTitle: {
     fontSize: 18,
     fontWeight: '700' as const,
     color: '#1a1a1a',
-    marginBottom: 16,
   },
   questProposalMilestone: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     gap: 14,
     backgroundColor: '#f8f9fa',
     padding: 16,
-    borderRadius: 14,
-    borderLeftWidth: 3,
-    borderLeftColor: '#4ECDC4',
+    borderRadius: 16,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: '#e8eaed',
+  },
+  milestoneNumber: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#4ECDC4',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  milestoneNumberText: {
+    fontSize: 14,
+    fontWeight: '700' as const,
+    color: '#fff',
+  },
+  milestoneContent: {
+    flex: 1,
   },
   questProposalMilestoneText: {
-    flex: 1,
     fontSize: 15,
     color: '#2d3436',
     lineHeight: 21,
+    marginBottom: 6,
+  },
+  milestoneXPBadge: {
+    alignSelf: 'flex-start',
   },
   questProposalMilestoneXP: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '700' as const,
     color: '#4ECDC4',
     backgroundColor: '#4ECDC415',
@@ -999,18 +1137,22 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 12,
     padding: 20,
-    backgroundColor: '#fafafa',
+    backgroundColor: '#f8f9fa',
+    borderTopWidth: 1,
+    borderTopColor: '#e8eaed',
   },
   questProposalButton: {
     flex: 1,
+    flexDirection: 'row',
     paddingVertical: 16,
-    borderRadius: 14,
+    borderRadius: 16,
     alignItems: 'center',
+    justifyContent: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 4,
   },
   questProposalButtonPrimary: {
     backgroundColor: '#4ECDC4',
@@ -1019,6 +1161,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderWidth: 2,
     borderColor: '#e0e0e0',
+    shadowOpacity: 0.05,
   },
   questProposalButtonTextPrimary: {
     fontSize: 16,
@@ -1026,7 +1169,7 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
   questProposalButtonTextSecondary: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '700' as const,
     color: '#555',
   },
@@ -1143,8 +1286,8 @@ const styles = StyleSheet.create({
   categoryCard: {
     width: '47%',
     backgroundColor: '#f8f9fa',
-    borderRadius: 16,
-    padding: 20,
+    borderRadius: 20,
+    padding: 24,
     alignItems: 'center',
     borderWidth: 2,
     borderColor: 'transparent',
@@ -1154,6 +1297,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 4,
     elevation: 2,
+    minHeight: 140,
+    justifyContent: 'center',
   },
   categoryCardSelected: {
     backgroundColor: '#fff',
@@ -1163,18 +1308,18 @@ const styles = StyleSheet.create({
     transform: [{ scale: 1.02 }],
   },
   categoryCardIcon: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: 64,
+    height: 64,
+    borderRadius: 32,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 12,
+    marginBottom: 14,
   },
   categoryCardIconText: {
     fontSize: 28,
   },
   categoryCardName: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '700' as const,
     color: '#2d3436',
     textAlign: 'center',
