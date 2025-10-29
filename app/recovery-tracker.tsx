@@ -273,7 +273,7 @@ export default function RecoveryTrackerScreen() {
         <LinearGradient colors={['#1a1a2e', '#16213e', '#0f3460']} style={styles.background}>
           <ScrollView
             style={styles.scrollView}
-            contentContainerStyle={[styles.scrollContent, { paddingTop: 24, paddingBottom: Math.max(insets.bottom, 20) + 24 }]}
+            contentContainerStyle={[styles.scrollContent, { paddingBottom: Math.max(insets.bottom, 20) + 24 }]}
             showsVerticalScrollIndicator={false}
           >
             <View style={styles.header}>
@@ -474,12 +474,13 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: 20,
+    paddingTop: 20,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 24,
+    marginBottom: 28,
   },
   headerTextContainer: {
     flex: 1,
