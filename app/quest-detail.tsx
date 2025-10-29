@@ -450,16 +450,16 @@ export default function QuestDetailScreen() {
         onRequestClose={() => setErrorAlert(null)}
       >
         <View style={styles.modalOverlay}>
-          <View style={styles.confirmModal}>
-            <View style={[styles.confirmModalHeader, { backgroundColor: '#ff475720', borderRadius: 50 }]}>
-              <XCircle size={32} color="#ff4757" />
+          <View style={styles.errorModal}>
+            <View style={styles.errorIconContainer}>
+              <XCircle size={40} color="#ff4757" />
             </View>
-            <Text style={styles.confirmModalTitle}>{errorAlert?.title}</Text>
-            <Text style={styles.confirmModalMessage}>
+            <Text style={styles.errorModalTitle}>{errorAlert?.title}</Text>
+            <Text style={styles.errorModalMessage}>
               {errorAlert?.message}
             </Text>
             <TouchableOpacity
-              style={[styles.confirmModalButtonConfirm, { width: '100%' }]}
+              style={styles.errorModalButton}
               onPress={() => {
                 if (Platform.OS !== 'web') {
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -468,7 +468,7 @@ export default function QuestDetailScreen() {
               }}
               activeOpacity={0.8}
             >
-              <Text style={styles.confirmModalButtonConfirmText}>OK</Text>
+              <Text style={styles.errorModalButtonText}>Got It</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -817,6 +817,52 @@ const styles = StyleSheet.create({
   editButtonText: {
     fontSize: 14,
     fontWeight: '600' as const,
+    color: '#fff',
+  },
+  errorModal: {
+    backgroundColor: '#16213e',
+    borderRadius: 24,
+    padding: 32,
+    width: '100%',
+    maxWidth: 380,
+    borderWidth: 2,
+    borderColor: '#ff475740',
+  },
+  errorIconContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#ff475715',
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignSelf: 'center',
+    marginBottom: 20,
+  },
+  errorModalTitle: {
+    fontSize: 24,
+    fontWeight: '700' as const,
+    color: '#fff',
+    textAlign: 'center',
+    marginBottom: 12,
+  },
+  errorModalMessage: {
+    fontSize: 16,
+    color: '#ffffff99',
+    textAlign: 'center',
+    lineHeight: 24,
+    marginBottom: 28,
+  },
+  errorModalButton: {
+    backgroundColor: '#667eea',
+    paddingVertical: 16,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+  },
+  errorModalButtonText: {
+    fontSize: 16,
+    fontWeight: '700' as const,
     color: '#fff',
   },
 });
