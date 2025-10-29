@@ -269,43 +269,45 @@ export default function PostToFeedScreen() {
     );
   }
 
+  if (showCamera) {
+    return (
+      <View style={styles.container}>
+        <CameraView
+          style={styles.camera}
+          ref={cameraRef}
+          facing="back"
+        >
+          <View style={[styles.cameraHeader, { paddingTop: insets.top + 20 }]}>
+            <TouchableOpacity
+              style={styles.cameraCloseButton}
+              onPress={() => {
+                if (Platform.OS !== 'web') {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                }
+                setShowCamera(false);
+              }}
+            >
+              <X size={24} color="#fff" />
+            </TouchableOpacity>
+          </View>
+          <View style={[styles.cameraFooter, { paddingBottom: insets.bottom + 20 }]}>
+            <TouchableOpacity
+              style={styles.captureButton}
+              onPress={handleCapturePhoto}
+            >
+              <View style={styles.captureButtonInner} />
+            </TouchableOpacity>
+          </View>
+        </CameraView>
+      </View>
+    );
+  }
+
   return (
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      {showCamera && (
-        <View style={StyleSheet.absoluteFill}>
-          <CameraView
-            style={styles.camera}
-            ref={cameraRef}
-            facing="back"
-          >
-            <View style={[styles.cameraHeader, { paddingTop: insets.top + 20 }]}>
-              <TouchableOpacity
-                style={styles.cameraCloseButton}
-                onPress={() => {
-                  if (Platform.OS !== 'web') {
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                  }
-                  setShowCamera(false);
-                }}
-              >
-                <X size={24} color="#fff" />
-              </TouchableOpacity>
-            </View>
-            <View style={[styles.cameraFooter, { paddingBottom: insets.bottom + 20 }]}>
-              <TouchableOpacity
-                style={styles.captureButton}
-                onPress={handleCapturePhoto}
-              >
-                <View style={styles.captureButtonInner} />
-              </TouchableOpacity>
-            </View>
-          </CameraView>
-        </View>
-      )}
-
       <LinearGradient
         colors={['#1a1a2e', '#16213e', '#0f3460']}
         style={styles.background}
