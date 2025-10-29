@@ -252,10 +252,14 @@ export default function AICoachScreen() {
                 ) : m.role === 'system' ? null : (
                   <View style={styles.assistantMessage}>
                     {m.parts.map((part, i) => {
+                      const partKey = `${m.id}-part-${i}-${part.type}`;
                       switch (part.type) {
                         case 'text':
+                          if (!part.text || part.text.trim() === '') {
+                            return null;
+                          }
                           return (
-                            <View key={`${m.id}-${i}`}>
+                            <View key={partKey}>
                               <Text style={styles.assistantMessageText}>{part.text}</Text>
                             </View>
                           );
@@ -268,7 +272,7 @@ export default function AICoachScreen() {
                                 return null;
                               }
                               return (
-                                <View key={`${m.id}-${i}`} style={styles.toolCall}>
+                                <View key={partKey} style={styles.toolCall}>
                                   <ActivityIndicator size="small" color="#4ECDC4" />
                                   <Text style={styles.toolCallText}>Thinking...</Text>
                                 </View>
@@ -277,7 +281,7 @@ export default function AICoachScreen() {
                               return null;
                             case 'output-error':
                               return (
-                                <View key={`${m.id}-${i}`} style={styles.toolError}>
+                                <View key={partKey} style={styles.toolError}>
                                   <AlertCircle size={16} color="#ff6b6b" />
                                   <Text style={styles.toolErrorText}>Error: {part.errorText}</Text>
                                 </View>
@@ -285,7 +289,7 @@ export default function AICoachScreen() {
                           }
                       }
                       return null;
-                    })}
+                    }).filter(Boolean)}
                   </View>
                 )}
               </View>
