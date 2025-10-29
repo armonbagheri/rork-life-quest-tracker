@@ -436,7 +436,7 @@ export default function QuestsScreen() {
               {availableDailyQuestsForToday.length > 0 && (
                 <>
                   <View style={styles.subsectionHeader}>
-                    <Text style={styles.subsectionTitle}>Daily (Today&apos;s Quests)</Text>
+                    <Text style={styles.subsectionTitle}>Daily (Today's Quests)</Text>
                     {!canCompleteMoreDaily && (
                       <View style={styles.limitBadge}>
                         <Text style={styles.limitBadgeText}>LIMIT REACHED</Text>

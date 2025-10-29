@@ -420,7 +420,7 @@ export default function QuestDetailScreen() {
               Have you completed:
             </Text>
             <Text style={styles.confirmModalMilestone}>
-              &ldquo;{pendingMilestone?.title}&rdquo;
+              "{pendingMilestone?.title}"
             </Text>
             <View style={styles.confirmModalButtons}>
               <TouchableOpacity
