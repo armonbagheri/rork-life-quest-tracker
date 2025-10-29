@@ -23,6 +23,8 @@ import {
   Clock,
   MessageCircle,
   Trash2,
+  Calendar,
+  ChevronRight,
 } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { useRecovery } from '@/context/RecoveryContext';
@@ -185,6 +187,22 @@ export default function RecoveryTrackerScreen() {
 
         <View style={styles.actionsContainer}>
           <TouchableOpacity
+            style={[styles.actionButton, styles.logDayButton]}
+            onPress={async () => {
+              if (Platform.OS !== 'web') {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              }
+              await logSuccess(item.id);
+              if (Platform.OS !== 'web') {
+                Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+              }
+            }}
+          >
+            <Calendar size={18} color="#fff" />
+            <Text style={styles.actionButtonText}>Log Day</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
             style={[styles.actionButton, styles.successButton]}
             onPress={() => {
               if (Platform.OS !== 'web') {
@@ -196,7 +214,7 @@ export default function RecoveryTrackerScreen() {
             }}
           >
             <Check size={18} color="#fff" />
-            <Text style={styles.actionButtonText}>Log Milestone</Text>
+            <Text style={styles.actionButtonText}>Milestone</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -211,13 +229,30 @@ export default function RecoveryTrackerScreen() {
             }}
           >
             <AlertCircle size={18} color="#fff" />
-            <Text style={styles.actionButtonText}>Log Relapse</Text>
+            <Text style={styles.actionButtonText}>Relapse</Text>
           </TouchableOpacity>
         </View>
 
         {item.logs.length > 0 && (
           <View style={styles.logsContainer}>
-            <Text style={styles.logsTitle}>Recent Activity</Text>
+            <View style={styles.logsHeader}>
+              <Text style={styles.logsTitle}>Recent Activity</Text>
+              <TouchableOpacity
+                style={styles.viewAllButton}
+                onPress={() => {
+                  if (Platform.OS !== 'web') {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  }
+                  router.push({
+                    pathname: '/recovery-activity',
+                    params: { itemId: item.id },
+                  });
+                }}
+              >
+                <Text style={styles.viewAllText}>View All</Text>
+                <ChevronRight size={16} color="#667eea" />
+              </TouchableOpacity>
+            </View>
             {item.logs
               .slice()
               .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
@@ -240,7 +275,7 @@ export default function RecoveryTrackerScreen() {
                     />
                     <View style={styles.logContent}>
                       <Text style={styles.logType}>
-                        {log.type === 'success' ? 'Milestone' : 'Relapse'}
+                        {log.type === 'success' ? 'Day Logged' : 'Relapse'}
                       </Text>
                       <Text style={styles.logDate}>{formattedDate}</Text>
                       {log.note && <Text style={styles.logNote}>{log.note}</Text>}
@@ -616,7 +651,7 @@ const styles = StyleSheet.create({
   },
   actionsContainer: {
     flexDirection: 'row',
-    gap: 12,
+    gap: 8,
     marginBottom: 20,
   },
   actionButton: {
@@ -624,9 +659,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
+    gap: 6,
     paddingVertical: 12,
     borderRadius: 12,
+  },
+  logDayButton: {
+    backgroundColor: '#667eea',
   },
   successButton: {
     backgroundColor: '#4ECDC4',
@@ -644,11 +682,26 @@ const styles = StyleSheet.create({
     borderTopColor: '#ffffff20',
     paddingTop: 16,
   },
+  logsHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
   logsTitle: {
     fontSize: 14,
     fontWeight: '600' as const,
     color: '#fff',
-    marginBottom: 12,
+  },
+  viewAllButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  viewAllText: {
+    fontSize: 13,
+    color: '#667eea',
+    fontWeight: '600' as const,
   },
   logItem: {
     flexDirection: 'row',
