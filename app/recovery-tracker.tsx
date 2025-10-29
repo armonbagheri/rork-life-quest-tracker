@@ -272,7 +272,7 @@ export default function RecoveryTrackerScreen() {
         <LinearGradient colors={['#1a1a2e', '#16213e', '#0f3460']} style={styles.background}>
           <ScrollView
             style={styles.scrollView}
-            contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 40 }]}
+            contentContainerStyle={[styles.scrollContent, { paddingTop: 20, paddingBottom: insets.bottom + 40 }]}
             showsVerticalScrollIndicator={false}
           >
             <View style={styles.header}>
