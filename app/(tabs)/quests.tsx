@@ -47,9 +47,17 @@ export default function QuestsScreen() {
   );
 
   const activeQuestTitles = new Set(quests.filter(q => q.status === 'active').map(q => q.title));
+  const completedQuestTitlesToday = new Set(
+    quests.filter(q => {
+      if (q.status !== 'completed' || q.category !== selectedCategory || q.type !== 'daily') return false;
+      const today = new Date().toISOString().split('T')[0];
+      const completedDate = q.completedDate ? q.completedDate.split('T')[0] : null;
+      return completedDate === today;
+    }).map(q => q.title)
+  );
 
   const availableDailyQuestsForToday = getAvailableDailyQuests(selectedCategory).filter(
-    quest => !activeQuestTitles.has(quest.title)
+    quest => !activeQuestTitles.has(quest.title) && !completedQuestTitlesToday.has(quest.title)
   );
 
   const dailyQuestProgress = getDailyQuestProgress(selectedCategory);
