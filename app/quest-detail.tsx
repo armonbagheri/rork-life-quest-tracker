@@ -110,7 +110,7 @@ export default function QuestDetailScreen() {
     
     setIsCompleting(true);
     router.push({
-      pathname: '/post-quest-reflection',
+      pathname: '/post-to-feed',
       params: { questId: questId! },
     });
   };
