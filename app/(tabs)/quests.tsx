@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import { Zap, Plus, Heart, DollarSign, Brain, Target, Users, Shield } from 'lucide-react-native';
+import { Zap, Plus, Heart, DollarSign, Brain, Target, Users, Shield, Star, Sparkles } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { useQuests } from '@/context/QuestContext';
 import { useUser } from '@/context/UserContext';
@@ -22,29 +22,50 @@ import { DEFAULT_SHORT_TERM_QUESTS, DEFAULT_LONG_TERM_QUESTS } from '@/constants
 export default function QuestsScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { quests, getAvailableDailyQuests, getDailyQuestProgress } = useQuests();
+  const { quests, getAvailableDailyQuests, getDailyQuestProgress, hobbies } = useQuests();
   const { enabledCategories } = useUser();
 
   const [selectedCategory, setSelectedCategory] = useState<CategoryType>(enabledCategories[0]);
+  const [selectedHobby, setSelectedHobby] = useState<string | null>(null);
 
   console.log('[QuestsScreen] Total active quests:', quests.length);
   console.log('[QuestsScreen] Selected category:', selectedCategory);
 
-  const activeDailyQuests = quests.filter(q => 
-    q.type === 'daily' && q.category === selectedCategory && q.status === 'active'
-  );
+  const activeDailyQuests = quests.filter(q => {
+    const matchesCategory = q.category === selectedCategory;
+    const isActive = q.status === 'active' && q.type === 'daily';
+    if (selectedCategory === 'hobbies' && selectedHobby) {
+      return matchesCategory && isActive && q.hobbySubcategory === selectedHobby;
+    }
+    return matchesCategory && isActive;
+  });
 
-  const activeShortTermQuests = quests.filter(q => 
-    q.type === 'short' && q.category === selectedCategory && q.status === 'active'
-  );
+  const activeShortTermQuests = quests.filter(q => {
+    const matchesCategory = q.category === selectedCategory;
+    const isActive = q.status === 'active' && q.type === 'short';
+    if (selectedCategory === 'hobbies' && selectedHobby) {
+      return matchesCategory && isActive && q.hobbySubcategory === selectedHobby;
+    }
+    return matchesCategory && isActive;
+  });
 
-  const activeLongTermQuests = quests.filter(q => 
-    q.type === 'long' && q.category === selectedCategory && q.status === 'active'
-  );
+  const activeLongTermQuests = quests.filter(q => {
+    const matchesCategory = q.category === selectedCategory;
+    const isActive = q.status === 'active' && q.type === 'long';
+    if (selectedCategory === 'hobbies' && selectedHobby) {
+      return matchesCategory && isActive && q.hobbySubcategory === selectedHobby;
+    }
+    return matchesCategory && isActive;
+  });
 
-  const activeCustomQuests = quests.filter(q => 
-    q.type === 'custom' && q.category === selectedCategory && q.status === 'active'
-  );
+  const activeCustomQuests = quests.filter(q => {
+    const matchesCategory = q.category === selectedCategory;
+    const isActive = q.status === 'active' && q.type === 'custom';
+    if (selectedCategory === 'hobbies' && selectedHobby) {
+      return matchesCategory && isActive && q.hobbySubcategory === selectedHobby;
+    }
+    return matchesCategory && isActive;
+  });
 
   const activeQuestTitles = new Set(quests.filter(q => q.status === 'active').map(q => q.title));
   const completedQuestTitlesToday = new Set(
@@ -108,6 +129,8 @@ export default function QuestsScreen() {
         return <Users {...iconProps} />;
       case 'recovery':
         return <Shield {...iconProps} />;
+      case 'hobbies':
+        return <Star {...iconProps} />;
     }
   };
 
@@ -228,10 +251,21 @@ export default function QuestsScreen() {
                 if (Platform.OS !== 'web') {
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 }
-                router.push({
-                  pathname: '/create-quest' as any,
-                  params: { defaultCategory: selectedCategory },
-                });
+                if (selectedCategory === 'hobbies') {
+                  if (!selectedHobby) {
+                    router.push('/create-hobby' as any);
+                  } else {
+                    router.push({
+                      pathname: '/create-quest' as any,
+                      params: { defaultCategory: selectedCategory, hobbySubcategory: selectedHobby },
+                    });
+                  }
+                } else {
+                  router.push({
+                    pathname: '/create-quest' as any,
+                    params: { defaultCategory: selectedCategory },
+                  });
+                }
               }}
             >
               <Plus size={20} color="#fff" />
@@ -259,6 +293,7 @@ export default function QuestsScreen() {
                       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                     }
                     setSelectedCategory(categoryId);
+                    setSelectedHobby(null);
                   }}
                 >
                   <View style={styles.tabContent}>
@@ -277,14 +312,88 @@ export default function QuestsScreen() {
             })}
           </ScrollView>
 
-          <View style={styles.dailyProgressContainer}>
-            <Text style={styles.dailyProgressText}>
-              Daily Quests: {dailyQuestProgress.completed}/{dailyQuestProgress.limit} completed
-            </Text>
-            {!canCompleteMoreDaily && (
-              <Text style={styles.dailyLimitText}>Come back tomorrow for more!</Text>
-            )}
-          </View>
+          {selectedCategory === 'hobbies' && (
+            <View style={styles.hobbiesSection}>
+              {hobbies.length === 0 ? (
+                <View style={styles.emptyHobbiesState}>
+                  <Sparkles size={32} color="#FF6B9D" />
+                  <Text style={styles.emptyHobbiesText}>No hobbies yet</Text>
+                  <Text style={styles.emptyHobbiesSubtext}>Create a hobby to start tracking your progress</Text>
+                  <TouchableOpacity
+                    style={[styles.createHobbyButton, { backgroundColor: CATEGORY_DATA.hobbies.color }]}
+                    onPress={() => {
+                      if (Platform.OS !== 'web') {
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      }
+                      router.push('/create-hobby' as any);
+                    }}
+                  >
+                    <Plus size={16} color="#fff" />
+                    <Text style={styles.createHobbyButtonText}>Create Hobby</Text>
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <>
+                  <Text style={styles.hobbiesLabel}>Select a hobby:</Text>
+                  <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={styles.hobbiesScroll}
+                  >
+                    {hobbies.map(hobby => (
+                      <TouchableOpacity
+                        key={hobby.id}
+                        style={[
+                          styles.hobbyCard,
+                          selectedHobby === hobby.id && styles.hobbyCardActive,
+                          selectedHobby === hobby.id && { borderColor: CATEGORY_DATA.hobbies.color },
+                        ]}
+                        onPress={() => {
+                          if (Platform.OS !== 'web') {
+                            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                          }
+                          setSelectedHobby(hobby.id);
+                        }}
+                      >
+                        <Star size={20} color={selectedHobby === hobby.id ? CATEGORY_DATA.hobbies.color : '#ffffff99'} />
+                        <Text
+                          style={[
+                            styles.hobbyCardText,
+                            selectedHobby === hobby.id && styles.hobbyCardTextActive,
+                          ]}
+                        >
+                          {hobby.name}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                    <TouchableOpacity
+                      style={styles.addHobbyCard}
+                      onPress={() => {
+                        if (Platform.OS !== 'web') {
+                          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                        }
+                        router.push('/create-hobby' as any);
+                      }}
+                    >
+                      <Plus size={20} color="#ffffff99" />
+                      <Text style={styles.addHobbyCardText}>Add Hobby</Text>
+                    </TouchableOpacity>
+                  </ScrollView>
+                </>
+              )}
+            </View>
+          )}
+
+          {selectedCategory !== 'hobbies' && (
+            <View style={styles.dailyProgressContainer}>
+              <Text style={styles.dailyProgressText}>
+                Daily Quests: {dailyQuestProgress.completed}/{dailyQuestProgress.limit} completed
+              </Text>
+              {!canCompleteMoreDaily && (
+                <Text style={styles.dailyLimitText}>Come back tomorrow for more!</Text>
+              )}
+            </View>
+          )}
 
           {(activeDailyQuests.length > 0 || activeShortTermQuests.length > 0 || activeLongTermQuests.length > 0 || activeCustomQuests.length > 0) && (
             <View style={styles.section}>
@@ -557,5 +666,91 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '700' as const,
+  },
+  hobbiesSection: {
+    marginBottom: 20,
+  },
+  emptyHobbiesState: {
+    backgroundColor: '#ffffff10',
+    borderRadius: 16,
+    padding: 32,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#ffffff20',
+  },
+  emptyHobbiesText: {
+    fontSize: 18,
+    fontWeight: '600' as const,
+    color: '#fff',
+    marginTop: 12,
+  },
+  emptyHobbiesSubtext: {
+    fontSize: 14,
+    color: '#ffffff99',
+    textAlign: 'center',
+    marginTop: 8,
+    marginBottom: 20,
+  },
+  createHobbyButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 12,
+  },
+  createHobbyButtonText: {
+    fontSize: 14,
+    fontWeight: '600' as const,
+    color: '#fff',
+  },
+  hobbiesLabel: {
+    fontSize: 16,
+    fontWeight: '600' as const,
+    color: '#fff',
+    marginBottom: 12,
+  },
+  hobbiesScroll: {
+    gap: 12,
+    paddingRight: 20,
+  },
+  hobbyCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 12,
+    backgroundColor: '#ffffff10',
+    borderWidth: 2,
+    borderColor: '#ffffff20',
+  },
+  hobbyCardActive: {
+    backgroundColor: '#ffffff15',
+  },
+  hobbyCardText: {
+    fontSize: 14,
+    fontWeight: '600' as const,
+    color: '#ffffff99',
+  },
+  hobbyCardTextActive: {
+    color: '#fff',
+  },
+  addHobbyCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 12,
+    backgroundColor: '#ffffff05',
+    borderWidth: 2,
+    borderColor: '#ffffff20',
+    borderStyle: 'dashed' as const,
+  },
+  addHobbyCardText: {
+    fontSize: 14,
+    fontWeight: '600' as const,
+    color: '#ffffff99',
   },
 });

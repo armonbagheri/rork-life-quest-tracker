@@ -21,10 +21,11 @@ export default function CreateQuestScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const params = useLocalSearchParams();
-  const { addCustomQuest } = useQuests();
+  const { addCustomQuest, hobbies } = useQuests();
 
   const isEditMode = params.editMode === 'true';
   const defaultCategory = (params.defaultCategory as CategoryType) || (params.questCategory as CategoryType) || 'health';
+  const defaultHobbySubcategory = params.hobbySubcategory as string | undefined;
 
   const [title, setTitle] = useState(isEditMode ? (params.questTitle as string || '') : '');
   const [description, setDescription] = useState(isEditMode ? (params.questDescription as string || '') : '');
@@ -32,6 +33,7 @@ export default function CreateQuestScreen() {
   const [questType, setQuestType] = useState<QuestType>(isEditMode ? (params.questType as QuestType || 'daily') : 'daily');
   const [microGoals, setMicroGoals] = useState<MicroGoal[]>(isEditMode && params.questMicroGoals ? JSON.parse(params.questMicroGoals as string) : []);
   const [newMicroGoalTitle, setNewMicroGoalTitle] = useState('');
+  const [hobbySubcategory, setHobbySubcategory] = useState<string | undefined>(defaultHobbySubcategory);
 
   const xpValue = questType === 'daily' ? QUEST_XP_VALUES.daily :
                  questType === 'short' ? QUEST_XP_VALUES.short :
@@ -79,7 +81,9 @@ export default function CreateQuestScreen() {
       description.trim(),
       questType,
       xpValue,
-      microGoals.length > 0 ? microGoals : undefined
+      microGoals.length > 0 ? microGoals : undefined,
+      undefined,
+      hobbySubcategory
     );
     
     router.back();
@@ -154,7 +158,7 @@ export default function CreateQuestScreen() {
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={styles.optionScroll}
             >
-              {(Object.keys(CATEGORY_DATA) as CategoryType[]).map(cat => {
+              {(Object.keys(CATEGORY_DATA) as CategoryType[]).filter(cat => cat !== 'hobbies').map(cat => {
                 const catData = CATEGORY_DATA[cat];
                 return (
                   <TouchableOpacity
@@ -179,6 +183,15 @@ export default function CreateQuestScreen() {
               })}
             </ScrollView>
           </View>
+
+          {category === 'hobbies' && hobbySubcategory && (
+            <View style={styles.hobbyInfo}>
+              <Text style={styles.hobbyInfoLabel}>Hobby:</Text>
+              <Text style={styles.hobbyInfoValue}>
+                {hobbies.find(h => h.id === hobbySubcategory)?.name}
+              </Text>
+            </View>
+          )}
 
           <View style={styles.section}>
             <Text style={styles.label}>Quest Type</Text>
@@ -493,5 +506,26 @@ const styles = StyleSheet.create({
     borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  hobbyInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: '#FF6B9D20',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: '#FF6B9D40',
+  },
+  hobbyInfoLabel: {
+    fontSize: 14,
+    fontWeight: '600' as const,
+    color: '#FF6B9D',
+  },
+  hobbyInfoValue: {
+    fontSize: 14,
+    fontWeight: '600' as const,
+    color: '#fff',
   },
 });

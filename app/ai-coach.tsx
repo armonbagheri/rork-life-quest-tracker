@@ -31,7 +31,7 @@ export default function AICoachScreen() {
     availableLevels,
     upgradeCoach,
   } = useAICoach();
-  const { quests: activeQuests, addCustomQuest } = useQuests();
+  const { quests: activeQuests, addCustomQuest, hobbies } = useQuests();
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [input, setInput] = useState('');
   const [pendingQuest, setPendingQuest] = useState<{
@@ -41,21 +41,23 @@ export default function AICoachScreen() {
     type: 'daily' | 'short' | 'long';
     xpValue: number;
     microGoals?: { title: string; xpValue: number; }[];
+    hobbySubcategory?: string;
   } | null>(null);
   const scrollViewRef = useRef<ScrollView>(null);
 
   const proposeQuestTool = createRorkTool({
-    description: "Propose a quest to the user with detailed steps/milestones. Use this when the user asks for help with a goal or wants a plan. Always break down long-term and short-term quests into actionable milestones.",
+    description: "Propose a quest to the user with detailed steps/milestones. Use this when the user asks for help with a goal or wants a plan. Always break down long-term and short-term quests into actionable milestones. For hobbies, make sure to provide hobby-specific advice.",
     zodSchema: z.object({
       title: z.string().describe("Quest title - clear and motivating"),
       description: z.string().describe("Detailed description of the quest"),
-      category: z.enum(['health', 'wealth', 'social', 'discipline', 'mental', 'recovery']).describe("Category that best fits this quest"),
+      category: z.enum(['health', 'wealth', 'social', 'discipline', 'mental', 'recovery', 'hobbies']).describe("Category that best fits this quest. Use 'hobbies' for hobby-specific quests."),
       type: z.enum(['daily', 'short', 'long']).describe("Quest duration: daily (1 day), short (2-7 days), long (1+ weeks)"),
       xpValue: z.number().describe("XP reward: 10-20 for daily, 30-50 for short, 60-100 for long"),
       microGoals: z.array(z.object({
         title: z.string(),
         xpValue: z.number()
-      })).optional().describe("Break down into 3-5 actionable milestones for short/long quests. Each milestone should have 5-15 XP.")
+      })).optional().describe("Break down into 3-5 actionable milestones for short/long quests. Each milestone should have 5-15 XP."),
+      hobbySubcategory: z.string().optional().describe("For hobbies category, the hobby ID. Use this when proposing hobby-specific quests.")
     }),
     execute: async (input) => {
       console.log('[AI Coach] Quest proposed:', input);
@@ -142,7 +144,8 @@ export default function AICoachScreen() {
       pendingQuest.type,
       pendingQuest.xpValue,
       microGoals,
-      undefined
+      undefined,
+      pendingQuest.hobbySubcategory
     );
 
     console.log('[AI Coach] Quest created successfully');
@@ -210,6 +213,14 @@ export default function AICoachScreen() {
                 >
                   <Text style={styles.exampleQuestionText}>🧘 Build meditation habit</Text>
                 </TouchableOpacity>
+                {hobbies.length > 0 && (
+                  <TouchableOpacity 
+                    style={styles.exampleQuestion}
+                    onPress={() => setInput(`I want to improve in ${hobbies[0].name}. Can you help me create a training plan?`)}
+                  >
+                    <Text style={styles.exampleQuestionText}>⭐ Improve in {hobbies[0].name}</Text>
+                  </TouchableOpacity>
+                )}
                 <TouchableOpacity 
                   style={styles.exampleQuestion}
                   onPress={() => setInput("I'm struggling with my active quest. Can you help?")}

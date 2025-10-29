@@ -43,6 +43,13 @@ export const CATEGORY_DATA: Record<CategoryType, Omit<Category, 'xp' | 'level' |
     color: '#1ABC9C',
     description: 'Overcoming addictions, resilience, healing',
   },
+  hobbies: {
+    id: 'hobbies',
+    name: 'Hobbies',
+    icon: 'star',
+    color: '#FF6B9D',
+    description: 'Track and improve your personal hobbies',
+  },
 };
 
 export const XP_PER_LEVEL = 1000;

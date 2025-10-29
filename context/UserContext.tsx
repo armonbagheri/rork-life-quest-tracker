@@ -26,6 +26,7 @@ const createDefaultUser = (): User => ({
     discipline: { xp: 0, level: 1, privacy: 'public', enabled: false },
     mental: { xp: 0, level: 1, privacy: 'public', enabled: false },
     recovery: { xp: 0, level: 1, privacy: 'private', enabled: false },
+    hobbies: { xp: 0, level: 1, privacy: 'public', enabled: false },
   },
   totalXP: 0,
   level: 1,

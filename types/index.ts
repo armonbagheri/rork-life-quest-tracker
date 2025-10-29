@@ -1,4 +1,4 @@
-export type CategoryType = 'health' | 'wealth' | 'social' | 'discipline' | 'mental' | 'recovery';
+export type CategoryType = 'health' | 'wealth' | 'social' | 'discipline' | 'mental' | 'recovery' | 'hobbies';
 
 export type PrivacyLevel = 'public' | 'friends' | 'private';
 
@@ -37,6 +37,7 @@ export interface Quest {
   isCommunityChallenge?: boolean;
   microGoals?: MicroGoal[];
   reflection?: QuestReflection;
+  hobbySubcategory?: string;
 }
 
 export interface MicroGoal {
@@ -200,4 +201,11 @@ export interface AICoachMessage {
   timestamp: string;
   questId?: string;
   category?: CategoryType;
+}
+
+export interface HobbySubcategory {
+  id: string;
+  name: string;
+  description?: string;
+  createdAt: string;
 }

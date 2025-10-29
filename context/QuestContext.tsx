@@ -1,12 +1,13 @@
 import createContextHook from '@nkzw/create-context-hook';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Quest, CategoryType, QuestType, MicroGoal, QuestReflection } from '@/types';
+import { Quest, CategoryType, QuestType, MicroGoal, QuestReflection, HobbySubcategory } from '@/types';
 import { useUser } from './UserContext';
 import { DEFAULT_DAILY_QUESTS } from '@/constants/quests';
 
 const QUESTS_STORAGE_KEY = '@lifequest_quests';
 const DAILY_QUEST_STATE_KEY = '@lifequest_daily_quest_state';
+const HOBBIES_STORAGE_KEY = '@lifequest_hobbies';
 const DAILY_QUEST_LIMIT = 3;
 
 interface DailyQuestState {
@@ -20,6 +21,7 @@ export const [QuestProvider, useQuests] = createContextHook(() => {
   const [quests, setQuests] = useState<Quest[]>([]);
   const [customQuests, setCustomQuests] = useState<Quest[]>([]);
   const [dailyQuestState, setDailyQuestState] = useState<DailyQuestState | null>(null);
+  const [hobbies, setHobbies] = useState<HobbySubcategory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const getTodayDate = useCallback(() => {
@@ -34,7 +36,7 @@ export const [QuestProvider, useQuests] = createContextHook(() => {
 
   const initializeDailyQuestState = useCallback((): DailyQuestState => {
     const today = getTodayDate();
-    const categories: CategoryType[] = ['health', 'wealth', 'social', 'discipline', 'mental', 'recovery'];
+    const categories: CategoryType[] = ['health', 'wealth', 'social', 'discipline', 'mental', 'recovery', 'hobbies'];
     
     const availableQuestsByCategory: Record<CategoryType, string[]> = {} as Record<CategoryType, string[]>;
     const completedCountByCategory: Record<CategoryType, number> = {} as Record<CategoryType, number>;
@@ -54,9 +56,10 @@ export const [QuestProvider, useQuests] = createContextHook(() => {
   useEffect(() => {
     async function loadQuests() {
       try {
-        const [storedQuests, storedDailyState] = await Promise.all([
+        const [storedQuests, storedDailyState, storedHobbies] = await Promise.all([
           AsyncStorage.getItem(QUESTS_STORAGE_KEY),
           AsyncStorage.getItem(DAILY_QUEST_STATE_KEY),
+          AsyncStorage.getItem(HOBBIES_STORAGE_KEY),
         ]);
 
         if (storedQuests) {
@@ -89,6 +92,12 @@ export const [QuestProvider, useQuests] = createContextHook(() => {
         }
 
         setDailyQuestState(dailyState);
+
+        if (storedHobbies) {
+          const hobbiesData = JSON.parse(storedHobbies);
+          setHobbies(hobbiesData);
+          console.log('[QuestContext] Loaded hobbies:', hobbiesData.length);
+        }
       } catch (error) {
         console.error('Failed to load quests:', error);
       } finally {
@@ -167,6 +176,32 @@ export const [QuestProvider, useQuests] = createContextHook(() => {
     }
   }, [quests, customQuests, saveQuests, addXP, dailyQuestState]);
 
+  const addHobby = useCallback(async (name: string, description?: string) => {
+    const newHobby: HobbySubcategory = {
+      id: `hobby-${Date.now()}-${Math.random()}`,
+      name,
+      description,
+      createdAt: new Date().toISOString(),
+    };
+
+    const updatedHobbies = [...hobbies, newHobby];
+    setHobbies(updatedHobbies);
+    await AsyncStorage.setItem(HOBBIES_STORAGE_KEY, JSON.stringify(updatedHobbies));
+    console.log('[QuestContext] Added hobby:', newHobby.name);
+    return newHobby.id;
+  }, [hobbies]);
+
+  const removeHobby = useCallback(async (hobbyId: string) => {
+    const updatedHobbies = hobbies.filter(h => h.id !== hobbyId);
+    setHobbies(updatedHobbies);
+    await AsyncStorage.setItem(HOBBIES_STORAGE_KEY, JSON.stringify(updatedHobbies));
+
+    const updatedQuests = quests.filter(q => !(q.category === 'hobbies' && q.hobbySubcategory === hobbyId));
+    const updatedCustomQuests = customQuests.filter(q => !(q.category === 'hobbies' && q.hobbySubcategory === hobbyId));
+    await saveQuests(updatedQuests, updatedCustomQuests);
+    console.log('[QuestContext] Removed hobby and related quests:', hobbyId);
+  }, [hobbies, quests, customQuests, saveQuests]);
+
   const addCustomQuest = useCallback(async (
     category: CategoryType,
     title: string,
@@ -174,7 +209,8 @@ export const [QuestProvider, useQuests] = createContextHook(() => {
     type: QuestType,
     xpValue: number,
     microGoals?: MicroGoal[],
-    endDate?: string
+    endDate?: string,
+    hobbySubcategory?: string
   ) => {
     const newQuest: Quest = {
       id: `custom-${Date.now()}-${Math.random()}`,
@@ -187,6 +223,7 @@ export const [QuestProvider, useQuests] = createContextHook(() => {
       startDate: new Date().toISOString(),
       endDate,
       microGoals,
+      hobbySubcategory,
     };
 
     console.log('[QuestContext] Adding custom quest:', newQuest.title, 'ID:', newQuest.id, 'Status:', newQuest.status);
@@ -319,6 +356,9 @@ export const [QuestProvider, useQuests] = createContextHook(() => {
     getAvailableDailyQuests,
     getDailyQuestProgress,
     canActivateDailyQuest,
+    hobbies,
+    addHobby,
+    removeHobby,
   }), [
     allQuests,
     activeQuests,
@@ -334,5 +374,8 @@ export const [QuestProvider, useQuests] = createContextHook(() => {
     getAvailableDailyQuests,
     getDailyQuestProgress,
     canActivateDailyQuest,
+    hobbies,
+    addHobby,
+    removeHobby,
   ]);
 });
